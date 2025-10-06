@@ -1,6 +1,8 @@
 venv/
 
 library.db
+*.db
+*.db-journal
 
 .vscode/
 

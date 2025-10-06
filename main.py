@@ -64,10 +64,51 @@ def display_books():
     conn.close()
 
 
+def update_book(book_id, title=None, author=None, year=None, available=None):
+    """
+    Update the book with the given ID.
+    You can change the title, author, year, and availability status.
+    """
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+
+    # Prepare list of fields to update
+    fields = []
+    values = []
+
+    if title is not None:
+        fields.append("title = ?")
+        values.append(title)
+    if author is not None:
+        fields.append("author = ?")
+        values.append(author)
+    if year is not None:
+        fields.append("year = ?")
+        values.append(year)
+    if available is not None:
+        fields.append("available = ?")
+        values.append(available)
+
+    # Execute update if there are any fields to update
+    if fields:
+        sql = f"UPDATE books SET {', '.join(fields)} WHERE id = ?"
+        values.append(book_id)
+        c.execute(sql, values)
+        conn.commit()
+
+    conn.close()
+
+
 if __name__ == "__main__":
     init_db()
+    add_book("The Shining", "Stephen King", 1977)
     add_book("It", "Stephen King", 1986)
     add_book("1984", "George Orwell", 1949)
 
-    print("Books in library:")
+    print("Before update:")
+    display_books()
+
+    update_book(2, title="It (Updated)", available=False)
+
+    print("\nAfter update:")
     display_books()
