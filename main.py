@@ -112,16 +112,44 @@ def delete_book(book_id):
     conn.close()
 
 
+def search_books(query):
+    """
+    Search for books by title or author containing the query string.    
+    """
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+
+    # Execute search query for title or author
+    c.execute("SELECT * FROM books WHERE LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?)",
+              ('%' + query + '%', '%' + query + '%'))
+
+    # Fetch all matching results
+    results = c.fetchall()
+
+    # Display results
+    if results:
+        print("Found books:")
+        for book in results:
+            # book = (id, title, author, year, available)
+            print(
+                f"{book[1]} by {book[2]}, {book[3]} - {'Available' if book[4] else 'Not available'}")
+    else:
+        print("No books found.")
+
+    conn.close()
+
+
 if __name__ == "__main__":
     init_db()
     add_book("The Shining", "Stephen King", 1977)
     add_book("It", "Stephen King", 1986)
     add_book("1984", "George Orwell", 1949)
 
-    print("Before deletion:")
+    print("\nDisplay all books:")
     display_books()
 
-    delete_book(3)
+    print("\nSearch for '1984':")
+    search_books("1984")
 
-    print("\nAfter deletion:")
-    display_books()
+    print("\nSearch for 'king':")
+    search_books("king")
