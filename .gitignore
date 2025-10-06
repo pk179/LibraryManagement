@@ -1,0 +1,10 @@
+venv/
+
+library.db
+
+.vscode/
+
+__pycache__/
+*.pyc
+
+thumbs.db
