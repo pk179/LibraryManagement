@@ -99,16 +99,29 @@ def update_book(book_id, title=None, author=None, year=None, available=None):
     conn.close()
 
 
+def delete_book(book_id):
+    """
+    Delete a book from the 'books' table by its ID.
+    """
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+
+    c.execute("DELETE FROM books WHERE id = ?", (book_id,))
+
+    conn.commit()
+    conn.close()
+
+
 if __name__ == "__main__":
     init_db()
     add_book("The Shining", "Stephen King", 1977)
     add_book("It", "Stephen King", 1986)
     add_book("1984", "George Orwell", 1949)
 
-    print("Before update:")
+    print("Before deletion:")
     display_books()
 
-    update_book(2, title="It (Updated)", available=False)
+    delete_book(3)
 
-    print("\nAfter update:")
+    print("\nAfter deletion:")
     display_books()
