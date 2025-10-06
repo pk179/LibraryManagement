@@ -1,5 +1,7 @@
 import sqlite3
 
+import bcrypt
+
 
 def init_db():
     """
@@ -17,6 +19,16 @@ def init_db():
             author TEXT,
             year INTEGER,
             available BOOLEAN
+        )
+    ''')
+
+    # Create the 'users' table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT DEFAULT 'user'
         )
     ''')
 
@@ -139,17 +151,61 @@ def search_books(query):
     conn.close()
 
 
+def register_user(username, password, role='user'):
+    """
+    Registers a new user in the database if the username is not already taken.
+    User has a role of 'user' by default and a hashed password.
+    """
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+
+    # Check if the username already exists
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    if c.fetchone():
+        print("This username is already taken.")
+        conn.close()
+        return False
+
+    # Hash the password before storing it
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+    # Add the new user
+    c.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+              (username, hashed_password, role))
+    conn.commit()
+    conn.close()
+    print(f"User '{username}' registered successfully as'{role}'.")
+    return True
+
+
+def login_user(username, password):
+    """
+    Logs in the user if the credentials are correct.
+    """
+    conn = sqlite3.connect('library.db')
+    c = conn.cursor()
+
+    # Get user by username
+    c.execute("SELECT password, role FROM users WHERE username = ?", (username,))
+    result = c.fetchone()
+    conn.close()
+
+    if result:
+        hashed_password, role = result
+        # Check password
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+            print(f"Welcome, {username}! (Role: {role})")
+            return {'username': username, 'role': role}
+    print("Invalid username or password.")
+    return None
+
+
 if __name__ == "__main__":
     init_db()
-    add_book("The Shining", "Stephen King", 1977)
-    add_book("It", "Stephen King", 1986)
-    add_book("1984", "George Orwell", 1949)
+    register_user("admin", "password123", "admin")
+    register_user("admin", "password123", "admin")
+    register_user("user", "mypassword")
 
-    print("\nDisplay all books:")
-    display_books()
-
-    print("\nSearch for '1984':")
-    search_books("1984")
-
-    print("\nSearch for 'king':")
-    search_books("king")
+    print("\nLogin tests:")
+    login_user("admin", "password123")
+    login_user("admin", "wrongpass")
