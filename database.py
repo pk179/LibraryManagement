@@ -13,10 +13,12 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS books (
             id INTEGER PRIMARY KEY,
-            title TEXT,
-            author TEXT,
+            title TEXT NOT NULL,
+            author TEXT NOT NULL,
             year INTEGER,
-            available BOOLEAN
+            quantity INTEGER DEFAULT 1,
+            genre TEXT DEFAULT '',
+            isbn TEXT UNIQUE
         )
     ''')
 
@@ -24,8 +26,8 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
-            username TEXT UNIQUE,
-            password TEXT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
             role TEXT DEFAULT 'user'
         )
     ''')
@@ -34,10 +36,12 @@ def init_db():
     c.execute('''
     CREATE TABLE IF NOT EXISTS loans (
         id INTEGER PRIMARY KEY,
-        user_id INTEGER,
-        book_id INTEGER,
-        loan_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-        return_date DATETIME,
+        user_id INTEGER NOT NULL,
+        book_id INTEGER NOT NULL,
+        borrow_date TEXT NOT NULL,
+        return_date TEXT,
+        due_date TEXT,
+        fine REAL DEFAULT 0,
         FOREIGN KEY(user_id) REFERENCES users(id),
         FOREIGN KEY(book_id) REFERENCES books(id)
         )
