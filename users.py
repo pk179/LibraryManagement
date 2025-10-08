@@ -1,6 +1,6 @@
 import sqlite3
 import bcrypt
-from utils import current_user, is_logged_in
+import utils
 
 
 def register_user(username, password, role='user'):
@@ -34,7 +34,7 @@ def login_user(username, password):
     """
     Logs in the user if the credentials are correct.
     """
-    global current_user
+
     conn = sqlite3.connect('library.db')
     c = conn.cursor()
 
@@ -48,7 +48,8 @@ def login_user(username, password):
         user_id, user_name, hashed_password, role = result
         # Check password
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
-            current_user = {"id": user_id, "username": user_name, "role": role}
+            utils.set_current_user({"id": user_id,
+                                    "username": user_name, "role": role})
             print(f"Welcome, {username}! (Role: {role})")
             return
     print("Invalid username or password.")
@@ -58,7 +59,7 @@ def logout_user():
     """
     Logs out the current user.
     """
-    global current_user
+    current_user = utils.get_current_user()
     if current_user:
         print(f"Logged out: {current_user['username']}")
         current_user = None

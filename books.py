@@ -1,5 +1,5 @@
 import sqlite3
-from utils import current_user, is_logged_in
+import utils
 
 
 def add_book(title, author, year, quantity=1, genre=None, isbn=None):
@@ -7,7 +7,7 @@ def add_book(title, author, year, quantity=1, genre=None, isbn=None):
     Creates a new book entry in the database
     If the book already exists (same title, author, year, and isbn), increase its quantity.
     """
-    if not is_logged_in():
+    if not utils.is_logged_in():
         print("You must be logged in to add a book.")
         return
 
@@ -72,7 +72,7 @@ def update_book(book_id, title=None, author=None, year=None, quantity=None, genr
     Update the book with the given ID.
     You can change the title, author, year, quantity, genre and ISBN.
     """
-    if not is_logged_in() or current_user["role"] != "admin":
+    if not utils.is_logged_in() or utils.get_current_user()["role"] != "admin":
         print("Access denied: only admins can update books.")
         return
 
@@ -117,7 +117,7 @@ def delete_book(book_id):
     """
     Delete a book from the 'books' table by its ID.
     """
-    if not is_logged_in() or current_user["role"] != "admin":
+    if not utils.is_logged_in() or utils.get_current_user()["role"] != "admin":
         print("Access denied: only admins can delete books.")
         return
 

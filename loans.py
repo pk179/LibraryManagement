@@ -1,5 +1,5 @@
 import sqlite3
-from utils import current_user, is_logged_in
+import utils
 from datetime import datetime, timedelta
 
 MAX_BORROWS = 5
@@ -11,7 +11,7 @@ def borrow_book(book_id):
     """
     Borrow a book if it is available. Decrease its quantity and add a loan entry.
     """
-    if not is_logged_in():
+    if not utils.is_logged_in():
         print("You must be logged in to borrow a book.")
         return
 
@@ -20,7 +20,7 @@ def borrow_book(book_id):
 
     # Check if the user has reached the maximum number of borrows
     c.execute("SELECT COUNT(*) FROM loans WHERE user_id = ? AND return_date IS NULL",
-              (current_user["id"],))
+              (utils.get_current_user()["id"],))
     active_loans = c.fetchone()[0]
     if active_loans >= MAX_BORROWS:
         print(
@@ -47,7 +47,7 @@ def borrow_book(book_id):
     c.execute("""
         INSERT INTO loans (user_id, book_id, borrow_date, due_date, fine)
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0)
-    """, (current_user["id"], book_id, due_date))
+    """, (utils.get_current_user()["id"], book_id, due_date))
     c.execute("UPDATE books SET quantity = quantity - 1 WHERE id = ?", (book_id,))
 
     conn.commit()
@@ -60,7 +60,7 @@ def return_book(book_id):
     """
     Return a borrowed book. Increase its quantity and update the loan entry with the return date.
     """
-    if not is_logged_in():
+    if not utils.is_logged_in():
         print("You must be logged in to return a book.")
         return
 
@@ -70,7 +70,7 @@ def return_book(book_id):
     # Check if the current user has borrowed this book and not yet returned it
     c.execute(
         "SELECT id, due_date FROM loans WHERE user_id = ? AND book_id = ? AND return_date IS NULL",
-        (current_user["id"], book_id)
+        (utils.get_current_user()["id"], book_id)
     )
     loan = c.fetchone()
 
