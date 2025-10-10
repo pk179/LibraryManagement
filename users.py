@@ -1,22 +1,28 @@
 import sqlite3
 import bcrypt
 import utils
+import validation as v
+import database as db
 
 
 def register_user(username, password, role='user'):
     """
-    Registers a new user in the database if the username is not already taken.
+    Registers a new user with validation.
     User has a role of 'user' by default and a hashed password.
     """
-    conn = sqlite3.connect('library.db')
-    c = conn.cursor()
-
-    # Check if the username already exists
-    c.execute("SELECT * FROM users WHERE username = ?", (username,))
-    if c.fetchone():
-        print("This username is already taken.")
-        conn.close()
+    # Validate inputs
+    try:
+        v.validate_user_registration(username, password, role)
+    except ValueError as e:
+        print(f"Registration error: {e}")
         return False
+
+    if db.user_exists(username):
+        print("This username is already taken.")
+        return False
+
+    conn = db.get_connection()
+    c = conn.cursor()
 
     # Hash the password before storing it
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -32,26 +38,28 @@ def register_user(username, password, role='user'):
 
 def login_user(username, password):
     """
-    Logs in the user if the credentials are correct.
+    Logs in the user if the credentials are correct (with validation).
     """
+    # Validate inputs
+    try:
+        v.validate_non_empty_string("Username", username)
+        v.validate_non_empty_string("Password", password)
+    except ValueError as e:
+        print(f"Login error: {e}")
+        return False
 
-    conn = sqlite3.connect('library.db')
-    c = conn.cursor()
+    user = db.get_user_by_username(username)
+    if not user:
+        print("Invalid username or password.")
+        return False
 
-    # Get user by username
-    c.execute(
-        "SELECT id, username, password, role FROM users WHERE username = ?", (username,))
-    result = c.fetchone()
-    conn.close()
-
-    if result:
-        user_id, user_name, hashed_password, role = result
-        # Check password
-        if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
-            utils.set_current_user({"id": user_id,
-                                    "username": user_name, "role": role})
-            print(f"Welcome, {username}! (Role: {role})")
-            return
+    user_id, user_name, hashed_password, role = user
+    # Check password
+    if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+        utils.set_current_user({"id": user_id,
+                                "username": user_name, "role": role})
+        print(f"Welcome, {username}! (Role: {role})")
+        return
     print("Invalid username or password.")
 
 
@@ -62,7 +70,7 @@ def logout_user():
     current_user = utils.get_current_user()
     if current_user:
         print(f"Logged out: {current_user['username']}")
-        current_user = None
+        utils.set_current_user(None)
     else:
         print("No logged in user.")
 
@@ -71,17 +79,22 @@ def delete_user(admin_username, target_username):
     """
     Deletes another user if the requesting user has an admin role.
     """
-    conn = sqlite3.connect('library.db')
-    c = conn.cursor()
-
-    # Check if the requester is admin
-    c.execute("SELECT role FROM users WHERE username = ?", (admin_username,))
-    result = c.fetchone()
-
-    if not result or result[0] != 'admin':
+    # Verify admin privileges
+    user = db.get_user_by_username(admin_username)
+    if not user or user[3] != 'admin':  # user[3] is the role
         print("Access denied. Only admins can delete users.")
-        conn.close()
         return False
+
+    if admin_username == target_username:
+        print("Admin cannot delete their own account.")
+        return False
+
+    if not db.user_exists(target_username):
+        print("User not found.")
+        return False
+
+    conn = db.get_connection()
+    c = conn.cursor()
 
     # Delete target user
     c.execute("DELETE FROM users WHERE username = ?", (target_username,))
@@ -96,8 +109,8 @@ def display_users():
     """
     Display all users if the current user has the 'admin' role.
     """
-    global current_user
-    if current_user is None:
+    current_user = utils.get_current_user()
+    if not current_user:
         print("You must be logged in.")
         return
 
@@ -105,9 +118,9 @@ def display_users():
         print("Access denied. Admins only.")
         return
 
-    conn = sqlite3.connect('library.db')
+    conn = db.get_connection()
     c = conn.cursor()
-    c.execute("SELECT id, username, role FROM users")
+    c.execute("SELECT id, username, role FROM users ORDER BY id")
     users = c.fetchall()
 
     print("All users:")

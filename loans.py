@@ -1,6 +1,7 @@
-import sqlite3
 import utils
 from datetime import datetime, timedelta
+import database as db
+import validation as v
 
 MAX_BORROWS = 5
 BORROW_DAYS = 14
@@ -15,12 +16,18 @@ def borrow_book(book_id):
         print("You must be logged in to borrow a book.")
         return
 
-    conn = sqlite3.connect('library.db')
+    if not db.book_exists(book_id):
+        print("Book not found.")
+        return
+
+    current_user = utils.get_current_user()
+
+    conn = db.get_connection()
     c = conn.cursor()
 
     # Check if the user has reached the maximum number of borrows
     c.execute("SELECT COUNT(*) FROM loans WHERE user_id = ? AND return_date IS NULL",
-              (utils.get_current_user()["id"],))
+              (current_user["id"],))
     active_loans = c.fetchone()[0]
     if active_loans >= MAX_BORROWS:
         print(
@@ -28,16 +35,9 @@ def borrow_book(book_id):
         conn.close()
         return
 
-    # Check if the book exists and is available
-    c.execute("SELECT quantity, title FROM books WHERE id = ?", (book_id,))
-    book = c.fetchone()
-    if not book:
-        print("Book not found.")
-        conn.close()
-        return
-    quantity, title = book
-    if quantity <= 0:
-        print(f"Sorry, '{title}' is currently not available.")
+    book = db.get_book_by_id(book_id)
+    if not book or book[4] <= 0:  # book[4] is the quantity
+        print("This book is currently unavailable.")
         conn.close()
         return
 
@@ -47,13 +47,13 @@ def borrow_book(book_id):
     c.execute("""
         INSERT INTO loans (user_id, book_id, borrow_date, due_date, fine)
         VALUES (?, ?, CURRENT_TIMESTAMP, ?, 0)
-    """, (utils.get_current_user()["id"], book_id, due_date))
-    c.execute("UPDATE books SET quantity = quantity - 1 WHERE id = ?", (book_id,))
+    """, (current_user["id"], book_id, due_date))
+    db.decrease_book_quantity(book_id)
 
     conn.commit()
     conn.close()
     print(
-        f"You have successfully borrowed '{title}'. It is due on {due_date}.")
+        f"You have successfully borrowed '{book[1]}'. It is due on {due_date}.")
 
 
 def return_book(book_id):
@@ -64,13 +64,15 @@ def return_book(book_id):
         print("You must be logged in to return a book.")
         return
 
-    conn = sqlite3.connect('library.db')
+    current_user = utils.get_current_user()
+
+    conn = db.get_connection()
     c = conn.cursor()
 
     # Check if the current user has borrowed this book and not yet returned it
     c.execute(
         "SELECT id, due_date FROM loans WHERE user_id = ? AND book_id = ? AND return_date IS NULL",
-        (utils.get_current_user()["id"], book_id)
+        (current_user["id"], book_id)
     )
     loan = c.fetchone()
 
@@ -94,7 +96,7 @@ def return_book(book_id):
     # Update the loan entry with the return date and fine, and increase book quantity
     c.execute(
         "UPDATE loans SET return_date = CURRENT_TIMESTAMP, fine = ? WHERE id = ?", (fine, loan_id))
-    c.execute("UPDATE books SET quantity = quantity + 1 WHERE id = ?", (book_id,))
+    db.increase_book_quantity(book_id)
 
     conn.commit()
     conn.close()
