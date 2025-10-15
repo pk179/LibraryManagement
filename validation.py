@@ -1,7 +1,6 @@
-
-
 import re
 from datetime import datetime
+import logger
 
 # constants
 MIN_YEAR = -2000   # allow ancient works
@@ -16,17 +15,22 @@ PASSWORD_MIN_LENGTH = 8
 def validate_non_empty_string(name: str, value: str):
     """Raise ValueError if value is empty or only whitespace."""
     if value is None or not str(value).strip():
-        raise ValueError(f"{name} must not be empty.")
+        msg = f"{name} must not be empty."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
 def validate_username(username: str):
     """Username: 3-30 chars, letters/digits/underscore only."""
     if username is None:
-        raise ValueError("Username is required.")
+        msg = "Username is required."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     if not USERNAME_REGEX.match(username):
-        raise ValueError(
-            "Username must be 3-30 characters and contain only letters, digits or underscore.")
+        msg = "Username must be 3-30 characters and contain only letters, digits or underscore."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
@@ -37,14 +41,21 @@ def validate_password_strength(password: str):
     - contains at least one letter and one digit
     """
     if password is None:
-        raise ValueError("Password is required.")
+        msg = "Password is required."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     if len(password) < PASSWORD_MIN_LENGTH:
-        raise ValueError(
-            f"Password must be at least {PASSWORD_MIN_LENGTH} characters long.")
+        msg = f"Password must be at least {PASSWORD_MIN_LENGTH} characters long."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     if not re.search(r"[A-Za-z]", password):
-        raise ValueError("Password must contain at least one letter.")
+        msg = "Password must contain at least one letter."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     if not re.search(r"[0-9]", password):
-        raise ValueError("Password must contain at least one digit.")
+        msg = "Password must contain at least one digit."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
@@ -52,7 +63,9 @@ def validate_role(role: str):
     """Role must be one of allowed roles."""
     allowed = {"user", "admin"}
     if role not in allowed:
-        raise ValueError(f"Role must be one of: {', '.join(sorted(allowed))}.")
+        msg = f"Role must be one of: {', '.join(sorted(allowed))}."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
@@ -61,9 +74,13 @@ def validate_year(year):
     try:
         y = int(year)
     except Exception:
-        raise ValueError("Year must be an integer.")
+        msg = "Year must be an integer."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     if y < MIN_YEAR or y > MAX_YEAR:
-        raise ValueError(f"Year must be between {MIN_YEAR} and {MAX_YEAR}.")
+        msg = f"Year must be between {MIN_YEAR} and {MAX_YEAR}."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
@@ -72,9 +89,13 @@ def validate_quantity(quantity):
     try:
         q = int(quantity)
     except Exception:
-        raise ValueError("Quantity must be an integer.")
+        msg = "Quantity must be an integer."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     if q < 0:
-        raise ValueError("Quantity must be >= 0.")
+        msg = "Quantity must be >= 0."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
@@ -133,7 +154,9 @@ def validate_isbn_optional(isbn: str):
     if not norm:
         return True  # empty => allowed
     if not is_valid_isbn(norm):
-        raise ValueError("Invalid ISBN (must be valid ISBN-10 or ISBN-13).")
+        msg = "Invalid ISBN (must be valid ISBN-10 or ISBN-13)."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
@@ -142,8 +165,9 @@ def validate_genre(genre: str):
     if genre is None or str(genre).strip() == "":
         return True
     if not GENRE_REGEX.match(genre):
-        raise ValueError(
-            "Genre may contain letters, digits, spaces and hyphens (max 50 chars).")
+        msg = "Genre may contain letters, digits, spaces and hyphens (max 50 chars)."
+        logger.log_warning(f"Validation failed: {msg}")
+        raise ValueError(msg)
     return True
 
 
@@ -152,10 +176,14 @@ def validate_user_registration(username: str, password: str, role: str = "user")
     Validate all fields required for user registration.
     Raises ValueError on first invalid field.
     """
-    validate_username(username)
-    validate_password_strength(password)
-    validate_role(role)
-    return True
+    try:
+        validate_username(username)
+        validate_password_strength(password)
+        validate_role(role)
+        return True
+    except ValueError as e:
+        logger.log_warning(f"User registration validation failed: {e}")
+        raise
 
 
 def validate_book_data(title: str, author: str, year, quantity, genre: str = None, isbn: str = None):
@@ -163,10 +191,14 @@ def validate_book_data(title: str, author: str, year, quantity, genre: str = Non
     Validate book fields prior to insertion/update.
     Raises ValueError on failure.
     """
-    validate_non_empty_string("Title", title)
-    validate_non_empty_string("Author", author)
-    validate_year(year)
-    validate_quantity(quantity)
-    validate_genre(genre)
-    validate_isbn_optional(isbn)
-    return True
+    try:
+        validate_non_empty_string("Title", title)
+        validate_non_empty_string("Author", author)
+        validate_year(year)
+        validate_quantity(quantity)
+        validate_genre(genre)
+        validate_isbn_optional(isbn)
+        return True
+    except ValueError as e:
+        logger.log_warning(f"Book validation failed: {e}")
+        raise
