@@ -136,3 +136,201 @@ def return_book(book_id):
     except Exception as e:
         print("An unexpected error occurred while returning the book.")
         logger.log_exception(f"Unexpected error in return_book: {e}")
+
+
+def show_active_loans():
+    """
+    Display active loans:
+    - Regular users: see only their own loans.
+    - Admins: see all active loans.
+    """
+    try:
+        if not utils.is_logged_in():
+            print("You must be logged in to view loans.")
+            logger.log_warning(
+                "Attempt to view loans without being logged in.")
+            return
+
+        user = utils.get_current_user()
+        conn = db.get_connection()
+        c = conn.cursor()
+
+        if user["role"] == "admin":
+            # Admin sees all loans
+            c.execute("""
+                SELECT u.username, b.title, b.author, l.due_date
+                FROM loans l
+                JOIN users u ON l.user_id = u.id
+                JOIN books b ON l.book_id = b.id
+                WHERE l.return_date IS NULL
+                ORDER BY l.due_date ASC
+            """)
+            loans = c.fetchall()
+            if loans:
+                print("\nAll active loans:")
+                for username, title, author, due_date in loans:
+                    print(
+                        f"- {title} by {author} (user: {username}, due: {due_date})")
+            else:
+                print("No active loans found.")
+            logger.log_info(
+                f"Admin '{user['username']}' viewed all active loans.")
+        else:
+            # Regular user sees their own loans
+            c.execute("""
+                SELECT b.title, b.author, l.due_date
+                FROM loans l
+                JOIN books b ON l.book_id = b.id
+                WHERE l.user_id = ? AND l.return_date IS NULL
+                ORDER BY l.due_date ASC
+            """, (user["id"],))
+            loans = c.fetchall()
+            if loans:
+                print("\nYour current loans:")
+                for title, author, due_date in loans:
+                    print(f"- {title} by {author} (due: {due_date})")
+            else:
+                print("You have no active loans.")
+            logger.log_info(
+                f"User '{user['username']}' viewed their active loans.")
+        conn.close()
+
+    except Exception as e:
+        print("An unexpected error occurred while displaying loans.")
+        logger.log_exception(
+            f"Unexpected error while displaying loans: {e}")
+
+
+def show_returned_loans():
+    """
+    Display returned loans:
+    - Regular users: see their own returned loans.
+    - Admins: see all returned loans.
+    """
+    try:
+        if not utils.is_logged_in():
+            print("You must be logged in to view returned loans.")
+            logger.log_warning(
+                "Attempt to view returned loans without being logged in.")
+            return
+
+        user = utils.get_current_user()
+        conn = db.get_connection()
+        c = conn.cursor()
+
+        if user["role"] == "admin":
+            # Admin sees all returned loans
+            c.execute("""
+                SELECT u.username, b.title, b.author, l.return_date, l.fine
+                FROM loans l
+                JOIN users u ON l.user_id = u.id
+                JOIN books b ON l.book_id = b.id
+                WHERE l.return_date IS NOT NULL
+                ORDER BY l.return_date DESC
+            """)
+            loans = c.fetchall()
+            if loans:
+                print("\nAll returned loans:")
+                for username, title, author, return_date, fine in loans:
+                    fine_text = f", fine: ${fine:.2f}" if fine > 0 else ""
+                    print(
+                        f"- {title} by {author} (user: {username}, returned: {return_date}{fine_text})")
+            else:
+                print("No returned loans found.")
+            logger.log_info(
+                f"Admin '{user['username']}' viewed all returned loans.")
+        else:
+            # Regular user sees their own returned loans
+            c.execute("""
+                SELECT b.title, b.author, l.return_date, l.fine
+                FROM loans l
+                JOIN books b ON l.book_id = b.id
+                WHERE l.user_id = ? AND l.return_date IS NOT NULL
+                ORDER BY l.return_date DESC
+            """, (user["id"],))
+            loans = c.fetchall()
+            if loans:
+                print("\nYour returned loans:")
+                for title, author, return_date, fine in loans:
+                    fine_text = f", fine: ${fine:.2f}" if fine > 0 else ""
+                    print(
+                        f"- {title} by {author} (returned: {return_date}{fine_text})")
+            else:
+                print("You have no returned loans.")
+            logger.log_info(
+                f"User '{user['username']}' viewed their returned loans.")
+
+        conn.close()
+
+    except Exception as e:
+        print("An unexpected error occurred while displaying returned loans.")
+        logger.log_exception(
+            f"Unexpected error while displaying returned loans: {e}")
+
+
+def show_overdue_loans():
+    """
+    Display overdue loans:
+    - Regular users: see their own overdue loans.
+    - Admins: see all overdue loans in the system.
+    """
+    try:
+        if not utils.is_logged_in():
+            print("You must be logged in to view overdue loans.")
+            logger.log_warning(
+                "Attempt to view overdue loans without being logged in.")
+            return
+
+        user = utils.get_current_user()
+        conn = db.get_connection()
+        c = conn.cursor()
+
+        if user["role"] == "admin":
+            # Admin sees all overdue loans
+            c.execute("""
+                SELECT u.username, b.title, b.author, l.due_date, l.fine
+                FROM loans l
+                JOIN users u ON l.user_id = u.id
+                JOIN books b ON l.book_id = b.id
+                WHERE l.return_date IS NULL AND DATE(l.due_date) < DATE('now')
+                ORDER BY l.due_date ASC
+            """)
+            loans = c.fetchall()
+
+            if loans:
+                print("\nAll overdue loans:")
+                for username, title, author, due_date, fine in loans:
+                    fine_text = f", current fine: ${fine:.2f}" if fine > 0 else ""
+                    print(
+                        f"- {title} by {author} (user: {username}, due: {due_date}{fine_text})")
+            else:
+                print("No overdue loans found.")
+            logger.log_info(
+                f"Admin '{user['username']}' viewed all overdue loans.")
+        else:
+            # Regular user sees their own overdue loans
+            c.execute("""
+                SELECT b.title, b.author, l.due_date, l.fine
+                FROM loans l
+                JOIN books b ON l.book_id = b.id
+                WHERE l.user_id = ? AND l.return_date IS NULL AND DATE(l.due_date) < DATE('now')
+                ORDER BY l.due_date ASC
+            """, (user["id"],))
+            loans = c.fetchall()
+
+            if loans:
+                print("\nYour overdue loans:")
+                for title, author, due_date, fine in loans:
+                    fine_text = f", current fine: ${fine:.2f}" if fine > 0 else ""
+                    print(f"- {title} by {author} (due: {due_date}{fine_text})")
+            else:
+                print("You have no overdue loans.")
+            logger.log_info(
+                f"User '{user['username']}' viewed their overdue loans.")
+
+        conn.close()
+
+    except Exception as e:
+        print("An unexpected error occurred while displaying overdue loans.")
+        logger.log_exception(
+            f"Unexpected error while displaying overdue loans: {e}")
