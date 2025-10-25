@@ -69,6 +69,17 @@ def user_exists(username):
     return result is not None
 
 
+def get_user_by_id(user_id):
+    """Fetches user record by username."""
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute(
+        "SELECT id, username, password, role FROM users WHERE id = ?", (user_id,))
+    result = c.fetchone()
+    conn.close()
+    return result  # Returns tuple or None
+
+
 def get_user_by_username(username):
     """Fetches user record by username."""
     conn = get_connection()
