@@ -51,6 +51,21 @@ def register_user(username, password, role='user'):
         return False
 
 
+def authenticate_user(username: str, password: str):
+    """
+    Verify username/password.
+    Returns tuple (id, username, hashed_pw, role) on success, or None on failure.
+    This is a small helper used by api/auth.py to create JWT tokens.
+    """
+    user = db.get_user_by_username(username)
+    if not user:
+        return None
+    user_id, user_name, hashed_password, role = user
+    if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
+        return user
+    return None
+
+
 def login_user(username, password):
     """
     Logs in the user if the credentials are correct (with validation).
