@@ -61,3 +61,21 @@ class TokenResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+
+class LoanCreate(BaseModel):
+    book_id: int
+
+
+class LoanReturn(BaseModel):
+    book_id: int
+
+
+class LoanResponse(BaseModel):
+    id: int
+    user_id: int
+    book_id: int
+    borrow_date: str
+    due_date: str
+    return_date: str | None
+    fine: float
