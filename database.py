@@ -66,7 +66,7 @@ def get_user_by_id(user_id):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute(
-            "SELECT id, username, role FROM users WHERE id = ?", (user_id,))
+            "SELECT id, username, password, role FROM users WHERE id = ?", (user_id,))
         row = c.fetchone()
         return dict(row) if row else None
 
@@ -77,7 +77,7 @@ def get_user_by_username(username):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute(
-            "SELECT id, username, role FROM users WHERE username = ?", (username,))
+            "SELECT id, username, password, role FROM users WHERE username = ?", (username,))
         row = c.fetchone()
         return dict(row) if row else None
 
