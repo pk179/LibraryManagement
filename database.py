@@ -338,3 +338,32 @@ def count_returned_loans():
         c = conn.cursor()
         c.execute("SELECT COUNT(*) FROM loans WHERE return_date IS NOT NULL")
         return c.fetchone()[0]
+
+
+def search_books(query, only_available=False, genre_filter=None):
+    """
+    Search books by title or author.
+    Optionally filter by availability and genre.
+    """
+    with sqlite3.connect(DB_NAME) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+
+        sql = """
+            SELECT id, title, author, year, quantity, genre, isbn
+            FROM books
+            WHERE (LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?))
+        """
+        params = [f"%{query}%", f"%{query}%"]
+
+        if genre_filter:
+            sql += " AND LOWER(genre) = LOWER(?)"
+            params.append(genre_filter)
+
+        if only_available:
+            sql += " AND quantity > 0"
+
+        sql += " ORDER BY title"
+
+        c.execute(sql, params)
+        return [dict(row) for row in c.fetchall()]
