@@ -116,7 +116,7 @@ def get_my_active_loans(current_user=Depends(current_user_dep)):
     Get currently borrowed books (not returned).
     """
     try:
-        rows = database.get_active_loans_by_user(current_user["id"])
+        rows = database.get_loans_by_user(current_user["id"])
         return [LoanResponse(**loan) for loan in rows]
     except Exception as e:
         logger.log_exception(
