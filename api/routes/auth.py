@@ -45,12 +45,11 @@ def login(payload: schemas.UserLogin):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
 
-        user_id, username, _hashed_pw, role = user
-
-        token_data = {"sub": str(user_id), "username": username, "role": role}
+        token_data = {"sub": str(
+            user["id"]), "username": user["username"], "role": user["role"]}
         access_token = auth.create_access_token(token_data)
 
-        logger.log_info(f"User '{username}' logged in, token issued.")
+        logger.log_info(f"User '{user['username']}' logged in, token issued.")
         return {"access_token": access_token, "token_type": "bearer"}
 
     except HTTPException:

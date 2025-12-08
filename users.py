@@ -1,4 +1,3 @@
-import utils
 import sqlite3
 import bcrypt
 import validation as v
@@ -79,7 +78,7 @@ def delete_user_by_id(user_id: int, admin_user: dict | None = None) -> bool:
     if admin_user["id"] == user_id:
         raise ValueError("Admin cannot delete their own account")
 
-     # Delete target user
+    # Delete target user
     success = db.delete_user(user_id)
 
     if not success:

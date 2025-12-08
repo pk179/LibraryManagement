@@ -11,6 +11,10 @@ def add_book(title, author, year, quantity=1, genre=None, isbn=None):
     try:
         v.validate_book_data(title, author, year, quantity, genre, isbn)
         normalized_isbn = v.normalize_isbn(isbn)
+        
+        # Convert empty string to None
+        if not normalized_isbn:
+            normalized_isbn = None
 
         # Check if ISBN already exists, if it does, increase quantity
         if normalized_isbn:
@@ -33,7 +37,7 @@ def add_book(title, author, year, quantity=1, genre=None, isbn=None):
             year=year,
             quantity=quantity,
             genre=genre or "",
-            isbn=normalized_isbn or None
+            isbn=normalized_isbn
         )
 
         if not book:

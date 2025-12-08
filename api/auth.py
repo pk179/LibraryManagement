@@ -30,7 +30,11 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire.isoformat(), "iat": now.isoformat()})
+
+    to_encode.update({
+        "exp": expire.timestamp(),
+        "iat": now.timestamp()
+    })
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     logger.log_info(f"Created access token for subject={data.get('sub')}")
     return token
@@ -65,7 +69,7 @@ def get_current_user_dep(credentials: HTTPAuthorizationCredentials = Depends(sec
     exp_iso = payload.get("exp")
     if exp_iso:
         try:
-            exp_dt = datetime.fromisoformat(exp_iso)
+            exp_dt = datetime.fromtimestamp(exp_iso, tz=timezone.utc)
             if exp_dt < datetime.now(timezone.utc):
                 logger.log_warning(f"Token expired for sub={sub}")
                 raise HTTPException(
@@ -82,9 +86,12 @@ def get_current_user_dep(credentials: HTTPAuthorizationCredentials = Depends(sec
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 
-    user_id, username, _hashed_pw, role = user_row
+    user_id = user_row["id"]
+    username = user_row["username"]
+    role = user_row["role"]
+
     logger.log_info(
-        f"Authenticated request as user id={user_id}, username={username}")
+        f"Authenticated request as user id={user_id}, username={username}, role={role}")
     return {"id": user_id, "username": username, "role": role}
 
 

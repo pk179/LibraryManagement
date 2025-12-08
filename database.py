@@ -155,10 +155,11 @@ def add_book_row(title, author, year, quantity=1, genre="", isbn=None):
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (title, author, year, quantity, genre, isbn))
             book_id = c.lastrowid
+            conn.commit()
         except sqlite3.IntegrityError:
             return None
 
-        return get_book_by_id(book_id)
+    return get_book_by_id(book_id)
 
 
 def update_book_row(book_id, **updates):
