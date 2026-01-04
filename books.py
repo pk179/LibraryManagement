@@ -11,10 +11,6 @@ def add_book(title, author, year, quantity=1, genre=None, isbn=None):
     try:
         v.validate_book_data(title, author, year, quantity, genre, isbn)
         normalized_isbn = v.normalize_isbn(isbn)
-        
-        # Convert empty string to None
-        if not normalized_isbn:
-            normalized_isbn = None
 
         # Check if ISBN already exists, if it does, increase quantity
         if normalized_isbn:
@@ -25,10 +21,13 @@ def add_book(title, author, year, quantity=1, genre=None, isbn=None):
                         book["id"],
                         quantity=book["quantity"] + int(quantity)
                     )
+
+                    updated_book = db.get_book_by_id(book["id"])
+
                     logger.log_info(
                         f"Updated quantity for ISBN={normalized_isbn} by {quantity}"
                     )
-                    return
+                    return updated_book, False  # Not created, just updated
 
         # Insert new book entry
         book = db.add_book_row(
@@ -36,7 +35,7 @@ def add_book(title, author, year, quantity=1, genre=None, isbn=None):
             author=author,
             year=year,
             quantity=quantity,
-            genre=genre or "",
+            genre=genre or None,
             isbn=normalized_isbn
         )
 
@@ -47,6 +46,7 @@ def add_book(title, author, year, quantity=1, genre=None, isbn=None):
             )
 
         logger.log_info(f"New book added: {title} ({year})")
+        return book, True  # Created
 
     except ValueError as e:
         logger.log_warning(f"Validation error while adding book: {e}")
@@ -116,6 +116,7 @@ def update_book(book_id, title=None, author=None, year=None, quantity=None, genr
             )
 
         logger.log_info(f"Book updated: ID={book_id}")
+        return updated
 
     except ValueError as e:
         logger.log_warning(f"Validation error while updating book: {e}")

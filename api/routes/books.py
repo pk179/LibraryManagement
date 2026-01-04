@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from api.auth import current_user_dep
 from api.schemas import (
     BookResponse,
@@ -41,13 +42,33 @@ def get_all_books(available: bool = False):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
+@router.get("/view/{book_id}", response_model=BookResponse)
+def get_book(book_id: int):
+    """
+    Get book details by ID.
+    """
+    try:
+        book = database.get_book_by_id(book_id)
+        if not book:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Book not found"
+            )
+        return BookResponse(**book)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.log_exception(f"Unexpected error getting book by id: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
 @router.post("/", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
 def add_book(payload: BookCreate, admin=Depends(admin_required)):
     """
     Add a new book (admin only).
     """
     try:
-        books.add_book(
+        book, created = books.add_book(
             payload.title,
             payload.author,
             payload.year,
@@ -55,7 +76,11 @@ def add_book(payload: BookCreate, admin=Depends(admin_required)):
             payload.genre,
             payload.isbn
         )
-        return {"message": "Book added"}
+
+        if created:
+            return JSONResponse(status_code=status.HTTP_201_CREATED, content=book)
+        else:
+            return JSONResponse(status_code=status.HTTP_201_CREATED, content=book)
     except HTTPException:
         raise
     except Exception as e:
@@ -69,7 +94,7 @@ def update_book(book_id: int, payload: BookUpdate, admin=Depends(admin_required)
     Update book fields by ID (admin only).
     """
     try:
-        books.update_book(
+        book = books.update_book(
             book_id,
             payload.title,
             payload.author,
@@ -78,7 +103,7 @@ def update_book(book_id: int, payload: BookUpdate, admin=Depends(admin_required)
             payload.genre,
             payload.isbn
         )
-        return {"message": "Book updated"}
+        return JSONResponse(status_code=status.HTTP_200_OK, content=book)
     except HTTPException:
         raise
     except Exception as e:

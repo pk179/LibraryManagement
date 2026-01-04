@@ -99,11 +99,12 @@ def validate_quantity(quantity):
     return True
 
 
-def normalize_isbn(isbn: str) -> str:
-    """Remove hyphens/spaces and return uppercase string."""
+def normalize_isbn(isbn: str) -> str | None:
+    """Remove hyphens/spaces and return uppercase string or None if empty/missing."""
     if isbn is None:
-        return ""
-    return re.sub(r'[^0-9Xx]', '', isbn).upper()
+        return None
+    s = re.sub(r'[^0-9Xx]', '', isbn).upper()
+    return s or None
 
 
 def is_valid_isbn(isbn: str) -> bool:

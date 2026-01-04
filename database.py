@@ -144,7 +144,7 @@ def get_all_books(only_available=False):
         return [dict(row) for row in c.fetchall()]
 
 
-def add_book_row(title, author, year, quantity=1, genre="", isbn=None):
+def add_book_row(title, author, year, quantity=1, genre=None, isbn=None):
     """Inserts new book and returns inserted row."""
     with sqlite3.connect(DB_NAME) as conn:
         conn.row_factory = sqlite3.Row
