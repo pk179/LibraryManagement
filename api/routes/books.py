@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from api.auth import current_user_dep
 from api.schemas import (
     BookResponse,
     BookCreate,
     BookUpdate,
-    MessageResponse
+    MessageResponse,
+    BulkDeleteResponse
 )
 import books
 import database
@@ -123,6 +125,21 @@ def delete_book(book_id: int, admin=Depends(admin_required)):
         raise
     except Exception as e:
         logger.log_exception(f"Unexpected error deleting book: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.delete("/", response_model=BulkDeleteResponse)
+def bulk_delete_books(ids: List[int] = Body(...), admin=Depends(admin_required)):
+    """
+    Delete multiple books by ID (admin only).
+    """
+    try:
+        result = books.delete_books(ids)
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.log_exception(f"Unexpected error in bulk_delete_books: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 

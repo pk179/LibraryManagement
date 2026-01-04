@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+from typing import List
 
 DB_NAME = "library.db"
 
@@ -186,6 +187,21 @@ def delete_book(book_id):
         c = conn.cursor()
         c.execute("DELETE FROM books WHERE id = ?", (book_id,))
         return c.rowcount > 0
+
+
+def delete_books(ids: List[int]):
+    """
+    Deletes multiple books by IDs using single SQL query.
+    """
+    if not ids:
+        return []
+
+    placeholders = ",".join("?" for _ in ids)
+    query = f"DELETE FROM books WHERE id IN ({placeholders})"
+
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute(query, ids)
 
 
 def decrease_book_quantity(book_id):

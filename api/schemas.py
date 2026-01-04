@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List, Optional
 
 
 class UserRegister(BaseModel):
@@ -79,3 +79,8 @@ class LoanResponse(BaseModel):
     due_date: str
     return_date: str | None
     fine: float
+
+
+class BulkDeleteResponse(BaseModel):
+    deleted: List[int]
+    not_found: List[int]

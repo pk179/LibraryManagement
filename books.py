@@ -166,3 +166,21 @@ def delete_book(book_id):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+
+
+def delete_books(ids: list[int]):
+    """
+    Delete multiple books by IDs
+    """
+    if not ids:
+        return {"deleted": [], "not_found": []}
+
+    existing_ids = [book_id for book_id in ids if db.book_exists(book_id)]
+    not_found = [book_id for book_id in ids if book_id not in existing_ids]
+
+    if existing_ids:
+        db.delete_books(existing_ids)
+        for book_id in existing_ids:
+            logger.log_info(f"Book deleted: ID={book_id}")
+
+    return {"deleted": existing_ids, "not_found": not_found}
