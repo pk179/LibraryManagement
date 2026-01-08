@@ -172,15 +172,33 @@ def delete_books(ids: list[int]):
     """
     Delete multiple books by IDs
     """
-    if not ids:
-        return {"deleted": [], "not_found": []}
+    try:
+        if not ids:
+            return {"deleted": [], "not_found": []}
 
-    existing_ids = [book_id for book_id in ids if db.book_exists(book_id)]
-    not_found = [book_id for book_id in ids if book_id not in existing_ids]
+        existing_ids = [book_id for book_id in ids if db.book_exists(book_id)]
+        not_found = [book_id for book_id in ids if book_id not in existing_ids]
 
-    if existing_ids:
-        db.delete_books(existing_ids)
-        for book_id in existing_ids:
-            logger.log_info(f"Book deleted: ID={book_id}")
+        if existing_ids:
 
-    return {"deleted": existing_ids, "not_found": not_found}
+            success = db.delete_books(existing_ids)
+
+            if not success:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Delete failed"
+                )
+            for book_id in existing_ids:
+                logger.log_info(f"Book deleted: ID={book_id}")
+
+        return {"deleted": existing_ids, "not_found": not_found}
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.log_exception(f"Unexpected error in delete_books: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )

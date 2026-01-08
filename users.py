@@ -3,6 +3,7 @@ import bcrypt
 import validation as v
 import database as db
 import logger
+from fastapi import HTTPException, status
 
 
 def register_user(username: str, password: str, role: str = "user") -> bool:
@@ -10,24 +11,26 @@ def register_user(username: str, password: str, role: str = "user") -> bool:
     Registers a new user with validation.
     User has a role of 'user' by default and a hashed password.
     """
-
-    # Validate inputs
-    v.validate_user_registration(username, password, role)
-
-    if db.user_exists(username):
-        logger.log_warning(
-            f"Registration failed: username '{username}' already exists."
-        )
-        raise ValueError("Username already exists")
-
-    # Hash the password before storing it
-    hashed_password = bcrypt.hashpw(
-        password.encode("utf-8"),
-        bcrypt.gensalt()
-    )
-
-    # Add the new user
     try:
+        # Validate inputs
+        v.validate_user_registration(username, password, role)
+
+        if db.user_exists(username):
+            logger.log_warning(
+                f"Registration failed: username '{username}' already exists."
+            )
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Username already exists"
+            )
+
+        # Hash the password before storing it
+        hashed_password = bcrypt.hashpw(
+            password.encode("utf-8"),
+            bcrypt.gensalt()
+        )
+
+        # Add the new user
         with db.get_connection() as conn:
             c = conn.cursor()
             c.execute(
@@ -38,9 +41,19 @@ def register_user(username: str, password: str, role: str = "user") -> bool:
         logger.log_info(f"New user registered: {username} (role={role})")
         return True
 
+    except ValueError as e:
+        logger.log_warning(f"Validation error during registration: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
     except sqlite3.IntegrityError as e:
         logger.log_error(f"Database integrity error during registration: {e}")
-        raise ValueError("Database integrity error")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Database integrity error"
+        )
 
 
 def authenticate_user(username: str, password: str):
@@ -73,10 +86,16 @@ def delete_user_by_id(user_id: int, admin_user: dict | None = None) -> bool:
     # Verify admin privileges
     if not admin_user or admin_user.get("role") != "admin":
         logger.log_warning("Unauthorized delete_user_by_id attempt.")
-        raise ValueError("Admin privileges required")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required"
+        )
 
     if admin_user["id"] == user_id:
-        raise ValueError("Admin cannot delete their own account")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Admin cannot delete their own account"
+        )
 
     # Delete target user
     success = db.delete_user(user_id)
