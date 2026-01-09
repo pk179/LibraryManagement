@@ -80,9 +80,9 @@ def add_book(payload: BookCreate, admin=Depends(admin_required)):
         )
 
         if created:
-            return JSONResponse(status_code=status.HTTP_201_CREATED, content=book)
+            return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Book added", "book": book})
         else:
-            return JSONResponse(status_code=status.HTTP_201_CREATED, content=book)
+            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Quantity updated", "book": book})
     except HTTPException:
         raise
     except Exception as e:
@@ -105,7 +105,7 @@ def update_book(book_id: int, payload: BookUpdate, admin=Depends(admin_required)
             payload.genre,
             payload.isbn
         )
-        return JSONResponse(status_code=status.HTTP_200_OK, content=book)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Book updated", "book": book})
     except HTTPException:
         raise
     except Exception as e:

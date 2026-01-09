@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from api.auth import current_user_dep
 from api.schemas import (
     LoanCreate,
@@ -34,8 +35,8 @@ def borrow_book(payload: LoanCreate, current_user=Depends(current_user_dep)):
     Borrow a book.
     """
     try:
-        loans.borrow_book(current_user["id"], payload.book_id)
-        return {"message": "Book borrowed"}
+        loan = loans.borrow_book(current_user["id"], payload.book_id)
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Book borrowed", "loan": loan})
     except HTTPException:
         raise
     except Exception as e:
@@ -51,8 +52,8 @@ def return_book(payload: LoanReturn, current_user=Depends(current_user_dep)):
     Return a borrowed book.
     """
     try:
-        loans.return_book(current_user["id"], payload.book_id)
-        return {"message": "Book returned"}
+        loan = loans.return_book(current_user["id"], payload.book_id)
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Book returned", "loan": loan})
     except HTTPException:
         raise
     except Exception as e:
