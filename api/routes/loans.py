@@ -63,22 +63,6 @@ def return_book(payload: LoanReturn, current_user=Depends(current_user_dep)):
         )
 
 
-@router.get("/me", response_model=list[LoanResponse])
-def get_my_loans(current_user=Depends(current_user_dep)):
-    """
-    Get active loans of the current user.
-    """
-    try:
-        rows = database.get_loans_by_user(current_user["id"])
-        return [LoanResponse(**loan) for loan in rows]
-    except Exception as e:
-        logger.log_exception(
-            f"Unexpected error reading user's active loans: {e}")
-        raise HTTPException(
-            status_code=500, detail="Internal server error"
-        )
-
-
 @router.get("/returned", response_model=list[LoanResponse])
 def get_my_returned(current_user=Depends(current_user_dep)):
     """
@@ -114,7 +98,7 @@ def get_my_overdue(current_user=Depends(current_user_dep)):
 @router.get("/active", response_model=list[LoanResponse])
 def get_my_active_loans(current_user=Depends(current_user_dep)):
     """
-    Get currently borrowed books (not returned).
+    Get active loans of the current user.
     """
     try:
         rows = database.get_loans_by_user(current_user["id"])
@@ -127,7 +111,7 @@ def get_my_active_loans(current_user=Depends(current_user_dep)):
         )
 
 
-@router.get("/", response_model=list[LoanResponse])
+@router.get("/all", response_model=list[LoanResponse])
 def get_all_loans(admin=Depends(admin_required)):
     """
     Get all loans (admin only).
@@ -137,6 +121,22 @@ def get_all_loans(admin=Depends(admin_required)):
         return [LoanResponse(**loan) for loan in rows]
     except Exception as e:
         logger.log_exception(f"Unexpected error when reading all loans: {e}")
+        raise HTTPException(
+            status_code=500, detail="Internal server error"
+        )
+
+
+@router.get("/all/overdue", response_model=list[LoanResponse])
+def get_all_overdue_loans(admin=Depends(admin_required)):
+    """
+    Get all overdue loans (not yet returned and past due date).
+    """
+    try:
+        rows = database.get_all_overdue_loans()
+        return [LoanResponse(**loan) for loan in rows]
+    except Exception as e:
+        logger.log_exception(
+            f"Unexpected error reading user's overdue loans: {e}")
         raise HTTPException(
             status_code=500, detail="Internal server error"
         )

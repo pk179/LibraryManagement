@@ -274,8 +274,8 @@ def get_loans_by_user(user_id):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute("""
-            SELECT loans.id, loans.book_id, books.title, books.author,
-                   loans.borrow_date, loans.due_date, loans.fine
+            SELECT loans.id, loans.user_id, loans.book_id, books.title, books.author,
+                   loans.borrow_date, loans.return_date, loans.due_date, loans.fine
             FROM loans
             JOIN books ON books.id = loans.book_id
             WHERE loans.user_id = ? AND loans.return_date IS NULL
@@ -289,8 +289,8 @@ def get_returned_loans_by_user(user_id):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute("""
-            SELECT loans.id, loans.book_id, books.title, books.author,
-                   loans.borrow_date, loans.due_date, loans.return_date, loans.fine
+            SELECT loans.id, loans.user_id, loans.book_id, books.title, books.author,
+                   loans.borrow_date, loans.return_date, loans.due_date, loans.fine
             FROM loans
             JOIN books ON books.id = loans.book_id
             WHERE loans.user_id = ? AND loans.return_date IS NOT NULL
@@ -306,8 +306,8 @@ def get_overdue_loans_by_user(user_id):
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
         c.execute("""
-            SELECT loans.id, loans.book_id, books.title, books.author,
-                   loans.borrow_date, loans.due_date, loans.fine
+            SELECT loans.id, loans.user_id, loans.book_id, books.title, books.author,
+                   loans.borrow_date, loans.return_date, loans.due_date, loans.fine
             FROM loans
             JOIN books ON books.id = loans.book_id
             WHERE loans.user_id = ? AND loans.return_date IS NULL
@@ -330,6 +330,26 @@ def get_all_loans():
             JOIN users ON users.id = loans.user_id
             ORDER BY loans.id DESC
         """)
+        return [dict(row) for row in c.fetchall()]
+
+
+def get_all_overdue_loans():
+    """Returns all overdue loans."""
+    now = datetime.now().isoformat()
+
+    with sqlite3.connect(DB_NAME) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("""
+            SELECT loans.id, loans.user_id, users.username,
+                   loans.book_id, books.title, books.author,
+                   loans.borrow_date, loans.due_date, loans.return_date, loans.fine
+            FROM loans
+            JOIN books ON books.id = loans.book_id
+            JOIN users ON users.id = loans.user_id
+            WHERE loans.return_date IS NULL AND loans.due_date < ?
+            ORDER BY loans.id DESC
+        """, (now,))
         return [dict(row) for row in c.fetchall()]
 
 
