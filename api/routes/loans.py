@@ -5,6 +5,7 @@ from api.schemas import (
     LoanCreate,
     LoanReturn,
     LoanResponse,
+    LoanActionResponse,
     MessageResponse
 )
 import loans
@@ -29,14 +30,14 @@ def admin_required(current_user=Depends(current_user_dep)):
     return current_user
 
 
-@router.post("/", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=LoanActionResponse, status_code=status.HTTP_201_CREATED)
 def borrow_book(payload: LoanCreate, current_user=Depends(current_user_dep)):
     """
     Borrow a book.
     """
     try:
         loan = loans.borrow_book(current_user["id"], payload.book_id)
-        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Book borrowed", "loan": loan})
+        return {"message": "Book borrowed", "loan": loan}
     except HTTPException:
         raise
     except Exception as e:
@@ -46,14 +47,14 @@ def borrow_book(payload: LoanCreate, current_user=Depends(current_user_dep)):
         )
 
 
-@router.post("/return", response_model=MessageResponse)
+@router.post("/return", response_model=LoanActionResponse)
 def return_book(payload: LoanReturn, current_user=Depends(current_user_dep)):
     """
     Return a borrowed book.
     """
     try:
         loan = loans.return_book(current_user["id"], payload.book_id)
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Book returned", "loan": loan})
+        return {"message": "Book returned", "loan": loan}
     except HTTPException:
         raise
     except Exception as e:

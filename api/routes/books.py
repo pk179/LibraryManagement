@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from api.auth import current_user_dep
 from api.schemas import (
     BookResponse,
+    PostBookResponse,
     BookCreate,
     BookUpdate,
     MessageResponse,
@@ -64,7 +65,7 @@ def get_book(book_id: int):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.post("/", response_model=MessageResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=PostBookResponse, status_code=status.HTTP_201_CREATED)
 def add_book(payload: BookCreate, admin=Depends(admin_required)):
     """
     Add a new book (admin only).
@@ -80,9 +81,9 @@ def add_book(payload: BookCreate, admin=Depends(admin_required)):
         )
 
         if created:
-            return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Book added", "book": book})
+            return {"message": "Book added", "book": book}
         else:
-            return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Quantity updated", "book": book})
+            return {"message": "Quantity updated", "book": book}
     except HTTPException:
         raise
     except Exception as e:
@@ -90,7 +91,7 @@ def add_book(payload: BookCreate, admin=Depends(admin_required)):
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.put("/{book_id}", response_model=MessageResponse)
+@router.put("/{book_id}", response_model=PostBookResponse)
 def update_book(book_id: int, payload: BookUpdate, admin=Depends(admin_required)):
     """
     Update book fields by ID (admin only).
@@ -105,7 +106,7 @@ def update_book(book_id: int, payload: BookUpdate, admin=Depends(admin_required)
             payload.genre,
             payload.isbn
         )
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Book updated", "book": book})
+        return {"message": "Book updated", "book": book}
     except HTTPException:
         raise
     except Exception as e:

@@ -202,6 +202,7 @@ def delete_books(ids: List[int]):
     with sqlite3.connect(DB_NAME) as conn:
         c = conn.cursor()
         c.execute(query, ids)
+        return c.rowcount
 
 
 def decrease_book_quantity(book_id):

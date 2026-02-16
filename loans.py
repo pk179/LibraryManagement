@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 import database
 import logger
 
-MAX_BORROWS = 5
+MAX_BORROWS = 3
 BORROW_DAYS = 30
 FINE_PER_DAY = 3.0
 

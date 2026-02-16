@@ -39,7 +39,8 @@ def register_user(username: str, password: str, role: str = "user") -> bool:
             )
 
         logger.log_info(f"New user registered: {username} (role={role})")
-        return True
+        user = db.get_user_by_username(username)
+        return user
 
     except ValueError as e:
         logger.log_warning(f"Validation error during registration: {e}")

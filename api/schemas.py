@@ -3,10 +3,9 @@ from typing import List, Optional
 
 
 class UserRegister(BaseModel):
-    username: str = Field(..., min_length=3, max_length=30,
-                          example="jan_kowalski")
-    password: str = Field(..., min_length=8, example="haslo123")
-    role: Optional[str] = Field(default="user", example="user")
+    username: str
+    password: str
+    role: Optional[str]
 
 
 class UserLogin(BaseModel):
@@ -21,6 +20,11 @@ class UserResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class RegisterResponse(BaseModel):
+    message: str
+    user: UserResponse
 
 
 class BookCreate(BaseModel):
@@ -54,6 +58,11 @@ class BookResponse(BaseModel):
         orm_mode = True
 
 
+class PostBookResponse(BaseModel):
+    message: str
+    book: BookResponse
+
+
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
@@ -79,6 +88,11 @@ class LoanResponse(BaseModel):
     due_date: str
     return_date: str | None
     fine: float
+
+
+class LoanActionResponse(BaseModel):
+    message: str
+    loan: LoanResponse
 
 
 class BulkDeleteResponse(BaseModel):

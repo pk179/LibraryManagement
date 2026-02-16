@@ -12,18 +12,18 @@ router = APIRouter(
 )
 
 
-@router.post("/register", response_model=schemas.MessageResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=schemas.RegisterResponse, status_code=status.HTTP_201_CREATED)
 def register(payload: schemas.UserRegister):
     """
     Register a new user.
     """
     try:
-        ok = users.register_user(
+        user = users.register_user(
             payload.username, payload.password, payload.role)
-        if not ok:
+        if not user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Registration failed")
-        return {"message": "User registered"}
+        return {"message": "User registered", "user": user}
     except HTTPException:
         raise
     except Exception as e:
