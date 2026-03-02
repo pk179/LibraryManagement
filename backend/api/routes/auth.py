@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
-
 import api.schemas as schemas
 import api.auth as auth
 import users

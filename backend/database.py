@@ -378,6 +378,17 @@ def count_returned_loans():
         return c.fetchone()[0]
 
 
+def count_overdue_loans():
+    """Returns number of overdue loans."""
+    now = datetime.now().isoformat()
+
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute(
+            "SELECT COUNT(*) FROM loans WHERE return_date IS NULL AND due_date < ?", (now,))
+        return c.fetchone()[0]
+
+
 def search_books(query, only_available=False, genre_filter=None):
     """
     Search books by title or author.

@@ -95,6 +95,13 @@ class LoanActionResponse(BaseModel):
     loan: LoanResponse
 
 
+class LoanStatsResponse(BaseModel):
+    total_loans: int
+    active_loans: int
+    overdue_loans: int
+    returned_loans: int
+
+
 class BulkDeleteResponse(BaseModel):
     deleted: List[int]
     not_found: List[int]

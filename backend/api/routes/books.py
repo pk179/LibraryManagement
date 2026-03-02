@@ -1,6 +1,5 @@
 from typing import List
 from fastapi import APIRouter, Body, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
 from api.auth import current_user_dep
 from api.schemas import (
     BookResponse,

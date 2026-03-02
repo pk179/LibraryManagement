@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
 from api.auth import current_user_dep
 from api.schemas import (
     LoanCreate,
     LoanReturn,
     LoanResponse,
     LoanActionResponse,
-    MessageResponse
+    LoanStatsResponse
 )
 import loans
 import database
@@ -143,7 +142,7 @@ def get_all_overdue_loans(admin=Depends(admin_required)):
         )
 
 
-@router.get("/stats", response_model=dict)
+@router.get("/stats", response_model=LoanStatsResponse)
 def loan_stats(admin=Depends(admin_required)):
     """
     Simple loan statistics.
@@ -151,13 +150,15 @@ def loan_stats(admin=Depends(admin_required)):
     try:
         total = database.count_all_loans()
         active = database.count_active_loans()
+        overdue = database.count_overdue_loans()
         returned = database.count_returned_loans()
 
-        return {
-            "total": total,
-            "active": active,
-            "returned": returned,
-        }
+        return LoanStatsResponse(
+            total_loans=total,
+            active_loans=active,
+            overdue_loans=overdue,
+            returned_loans=returned
+        )
     except Exception as e:
         logger.log_exception(f"Unexpected error reading loan stats: {e}")
         raise HTTPException(

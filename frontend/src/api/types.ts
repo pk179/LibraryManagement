@@ -85,6 +85,13 @@ export interface LoanActionResponse {
     loan: LoanResponse;
 }
 
+export interface LoanStatsResponse {
+    total: number;
+    active: number;
+    overdue: number;
+    returned: number;
+}
+
 export interface BulkDeleteResponse {
     deleted: number[];
     not_found: number[];
