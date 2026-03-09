@@ -96,3 +96,11 @@ export interface BulkDeleteResponse {
     deleted: number[];
     not_found: number[];
 }
+
+export interface JwtPayload {
+    username?: string;
+    role?: "admin" | "user";
+    sub?: string;
+    exp?: number;
+    iat?: number;
+}
