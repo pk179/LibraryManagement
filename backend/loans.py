@@ -6,6 +6,7 @@ import logger
 MAX_BORROWS = 3
 BORROW_DAYS = 30
 FINE_PER_DAY = 3.0
+MAX_FINE = 300.0
 
 
 def borrow_book(user_id: int, book_id: int):
@@ -87,14 +88,9 @@ def return_book(user_id: int, book_id: int):
             )
 
         loan_id = loan["id"]
-        due_date = datetime.fromisoformat(loan["due_date"])
-        now = datetime.now()
 
         # Calculate fine
-        fine = 0.0
-        if now > due_date:
-            days_overdue = (now - due_date).days
-            fine = days_overdue * FINE_PER_DAY
+        fine = database.calculate_fine(loan["due_date"])
 
         # Close loan
         closed = database.close_loan(loan_id, fine)

@@ -5,6 +5,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import BooksList from './pages/BooksList';
+import MyLoans from './pages/MyLoans';
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Home />} />
+            <Route path="/books" element={<BooksList />} />
+            <Route path="/my-loans" element={<MyLoans />} />
 
           </Route>
 

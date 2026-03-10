@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 from typing import List
+from loans import FINE_PER_DAY, MAX_FINE
 
 DB_NAME = "library.db"
 
@@ -269,6 +270,19 @@ def close_loan(loan_id, fine=0):
         return dict(c.fetchone())
 
 
+def calculate_fine(due_date):
+    """Calculates fine based on due date."""
+    now = datetime.now()
+    due = datetime.fromisoformat(due_date)
+
+    if now <= due:
+        return 0
+
+    days_overdue = (now - due).days
+    fine = days_overdue * FINE_PER_DAY
+    return min(fine, MAX_FINE)
+
+
 def get_loans_by_user(user_id):
     """Returns user's active loans."""
     with sqlite3.connect(DB_NAME) as conn:
@@ -281,7 +295,20 @@ def get_loans_by_user(user_id):
             JOIN books ON books.id = loans.book_id
             WHERE loans.user_id = ? AND loans.return_date IS NULL
         """, (user_id,))
-        return [dict(row) for row in c.fetchall()]
+
+        loans = []
+        rows = c.fetchall()
+
+        for row in rows:
+            loan = dict(row)
+            new_fine = calculate_fine(loan["due_date"])
+            c.execute(
+                "UPDATE loans SET fine = ? WHERE id = ?",
+                (new_fine, loan["id"]))
+            loan["fine"] = new_fine
+            loans.append(loan)
+
+        return loans
 
 
 def get_returned_loans_by_user(user_id):
