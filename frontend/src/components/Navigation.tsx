@@ -21,9 +21,7 @@ function Navigation() {
                 <>
                     {role === 'admin' && (
                         <>
-                            <Link to="/admin/books">Manage Books</Link> |{' '}
-                            <Link to="/admin/users">Manage Users</Link> |{' '}
-                            <Link to="/admin/loans">All Loans</Link> |{' '}
+                            <Link to="/admin">Admin Dashboard</Link> |{' '}
                         </>
                     )}
                     <span>Logged in as {username}</span>{' '}

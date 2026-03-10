@@ -1,12 +1,13 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import ProtectedRoute from './components/ProtectedRoute';
-
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import BooksList from './pages/BooksList';
 import MyLoans from './pages/MyLoans';
+import AdminDashboard from './pages/AdminDashboard';
+
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           </Route>
 
           <Route element={<ProtectedRoute adminOnly={true} />}>
+            <Route path="/admin" element={<AdminDashboard />} />
 
           </Route>
         </Routes>

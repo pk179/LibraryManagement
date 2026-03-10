@@ -86,10 +86,10 @@ export interface LoanActionResponse {
 }
 
 export interface LoanStatsResponse {
-    total: number;
-    active: number;
-    overdue: number;
-    returned: number;
+    total_loans: number;
+    active_loans: number;
+    overdue_loans: number;
+    returned_loans: number;
 }
 
 export interface BulkDeleteResponse {
