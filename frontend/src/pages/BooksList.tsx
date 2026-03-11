@@ -95,7 +95,7 @@ function BooksList() {
                             <tr key={book.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '8px' }}>{book.title}</td>
                                 <td style={{ padding: '8px' }}>{book.author}</td>
-                                <td style={{ padding: '8px' }}>{book.year}</td>
+                                <td style={{ padding: '8px' }}>{book.year >= 0 ? book.year : Math.abs(book.year) + ' BC'}</td>
                                 <td style={{ padding: '8px' }}>{book.genre || '-'}</td>
                                 <td style={{ padding: '8px' }}>
                                     {book.quantity > 0 ? `Yes (${book.quantity})` : 'No'}

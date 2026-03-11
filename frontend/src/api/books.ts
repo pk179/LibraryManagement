@@ -29,7 +29,7 @@ export const deleteBook = async (bookId: number): Promise<MessageResponse> => {
 };
 
 export const bulkDeleteBooks = async (bookIds: number[]): Promise<BulkDeleteResponse> => {
-    const response = await api.delete<BulkDeleteResponse>('/api/books', { data: { ids: bookIds } });
+    const response = await api.delete<BulkDeleteResponse>('/api/books', { data: bookIds });
     return response.data;
 };
 
