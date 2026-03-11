@@ -8,6 +8,7 @@ import BooksList from './pages/BooksList';
 import MyLoans from './pages/MyLoans';
 import AdminDashboard from './pages/AdminDashboard';
 import BooksManagement from './pages/BooksManagement';
+import UsersManagement from './pages/UsersManagement';
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route element={<ProtectedRoute adminOnly={true} />}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/books" element={<BooksManagement />} />
+            <Route path="/admin/users" element={<UsersManagement />} />
 
           </Route>
         </Routes>

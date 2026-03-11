@@ -201,6 +201,7 @@ function BooksManagement() {
                             <th style={{ textAlign: 'left', padding: '8px' }}>Year</th>
                             <th style={{ textAlign: 'left', padding: '8px' }}>Genre</th>
                             <th style={{ textAlign: 'left', padding: '8px' }}>Quantity</th>
+                            <th style={{ textAlign: 'left', padding: '8px' }}>ISBN</th>
                             <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
                         </tr>
                     </thead>
@@ -219,6 +220,7 @@ function BooksManagement() {
                                 <td style={{ padding: '8px' }}>{book.year >= 0 ? book.year : Math.abs(book.year) + ' BC'}</td>
                                 <td style={{ padding: '8px' }}>{book.genre || '-'}</td>
                                 <td style={{ padding: '8px' }}>{book.quantity}</td>
+                                <td style={{ padding: '8px' }}>{book.isbn}</td>
                                 <td style={{ padding: '8px' }}>
                                     <button onClick={() => openEditForm(book)}>Edit</button>{' '}
                                     <button onClick={() => handleDelete(book.id)}>Delete</button>
