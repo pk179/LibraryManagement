@@ -84,6 +84,8 @@ class LoanResponse(BaseModel):
     id: int
     user_id: int
     book_id: int
+    title: str
+    author: str
     borrow_date: str
     due_date: str
     return_date: str | None

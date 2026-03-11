@@ -196,6 +196,7 @@ function BooksManagement() {
                     <thead>
                         <tr style={{ borderBottom: '1px solid #ccc' }}>
                             <th style={{ textAlign: 'left', padding: '8px' }}></th>
+                            <th style={{ textAlign: 'left', padding: '8px' }}>ID</th>
                             <th style={{ textAlign: 'left', padding: '8px' }}>Title</th>
                             <th style={{ textAlign: 'left', padding: '8px' }}>Author</th>
                             <th style={{ textAlign: 'left', padding: '8px' }}>Year</th>
@@ -215,6 +216,7 @@ function BooksManagement() {
                                         onChange={e => handleSelect(book.id, e.target.checked)}
                                     />
                                 </td>
+                                <td style={{ padding: '8px' }}>{book.id}</td>
                                 <td style={{ padding: '8px' }}>{book.title}</td>
                                 <td style={{ padding: '8px' }}>{book.author}</td>
                                 <td style={{ padding: '8px' }}>{book.year >= 0 ? book.year : Math.abs(book.year) + ' BC'}</td>

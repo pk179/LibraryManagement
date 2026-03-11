@@ -9,6 +9,7 @@ import MyLoans from './pages/MyLoans';
 import AdminDashboard from './pages/AdminDashboard';
 import BooksManagement from './pages/BooksManagement';
 import UsersManagement from './pages/UsersManagement';
+import AllLoans from './pages/AllLoans';
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/books" element={<BooksManagement />} />
             <Route path="/admin/users" element={<UsersManagement />} />
+            <Route path="/admin/loans" element={<AllLoans />} />
 
           </Route>
         </Routes>

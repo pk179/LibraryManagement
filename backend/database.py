@@ -245,7 +245,15 @@ def insert_loan(user_id, book_id, due_date):
         except sqlite3.IntegrityError:
             return None
 
-        c.execute("SELECT * FROM loans WHERE id = ?", (loan_id,))
+        c.execute("""
+            SELECT loans.id, loans.user_id, loans.book_id,
+                books.title, books.author,
+                loans.borrow_date, loans.return_date,
+                loans.due_date, loans.fine
+            FROM loans
+            JOIN books ON books.id = loans.book_id
+            WHERE loans.id = ?
+        """, (loan_id,))
         row = c.fetchone()
         return dict(row)
 
@@ -266,7 +274,15 @@ def close_loan(loan_id, fine=0):
         if c.rowcount == 0:
             return None
 
-        c.execute("SELECT * FROM loans WHERE id = ?", (loan_id,))
+        c.execute("""
+            SELECT loans.id, loans.user_id, loans.book_id,
+                books.title, books.author,
+                loans.borrow_date, loans.return_date,
+                loans.due_date, loans.fine
+            FROM loans
+            JOIN books ON books.id = loans.book_id
+            WHERE loans.id = ?
+        """, (loan_id,))
         return dict(c.fetchone())
 
 
@@ -294,6 +310,7 @@ def get_loans_by_user(user_id):
             FROM loans
             JOIN books ON books.id = loans.book_id
             WHERE loans.user_id = ? AND loans.return_date IS NULL
+            ORDER BY loans.id DESC
         """, (user_id,))
 
         loans = []
@@ -301,11 +318,12 @@ def get_loans_by_user(user_id):
 
         for row in rows:
             loan = dict(row)
-            new_fine = calculate_fine(loan["due_date"])
-            c.execute(
-                "UPDATE loans SET fine = ? WHERE id = ?",
-                (new_fine, loan["id"]))
-            loan["fine"] = new_fine
+            if not loan["return_date"]:
+                new_fine = calculate_fine(loan["due_date"])
+                c.execute(
+                    "UPDATE loans SET fine = ? WHERE id = ?",
+                    (new_fine, loan["id"]))
+                loan["fine"] = new_fine
             loans.append(loan)
 
         return loans
@@ -322,6 +340,7 @@ def get_returned_loans_by_user(user_id):
             FROM loans
             JOIN books ON books.id = loans.book_id
             WHERE loans.user_id = ? AND loans.return_date IS NOT NULL
+            ORDER BY loans.id DESC
         """, (user_id,))
         return [dict(row) for row in c.fetchall()]
 
@@ -340,6 +359,7 @@ def get_overdue_loans_by_user(user_id):
             JOIN books ON books.id = loans.book_id
             WHERE loans.user_id = ? AND loans.return_date IS NULL
               AND loans.due_date < ?
+            ORDER BY loans.id DESC
         """, (user_id, now))
         return [dict(row) for row in c.fetchall()]
 
@@ -358,7 +378,20 @@ def get_all_loans():
             JOIN users ON users.id = loans.user_id
             ORDER BY loans.id DESC
         """)
-        return [dict(row) for row in c.fetchall()]
+        loans = []
+        rows = c.fetchall()
+
+        for row in rows:
+            loan = dict(row)
+            if not loan["return_date"]:
+                new_fine = calculate_fine(loan["due_date"])
+                c.execute(
+                    "UPDATE loans SET fine = ? WHERE id = ?",
+                    (new_fine, loan["id"]))
+                loan["fine"] = new_fine
+            loans.append(loan)
+
+        return loans
 
 
 def get_all_overdue_loans():

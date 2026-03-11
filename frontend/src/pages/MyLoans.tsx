@@ -57,7 +57,7 @@ function MyLoans() {
         }
     };
 
-    const renderLoansTable = (loans: LoanResponse[], showReturnButton: boolean) => {
+    const renderLoansTable = (loans: LoanResponse[], showReturnButton: boolean, showReturnDate: boolean) => {
         if (loans.length === 0) {
             return <p>No loans in this category.</p>;
         }
@@ -66,10 +66,13 @@ function MyLoans() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                     <tr style={{ borderBottom: '1px solid #ccc' }}>
-                        <th style={{ textAlign: 'left', padding: '8px' }}>Book ID</th>
+                        <th style={{ textAlign: 'left', padding: '8px' }}>Title</th>
+                        <th style={{ textAlign: 'left', padding: '8px' }}>Author</th>
                         <th style={{ textAlign: 'left', padding: '8px' }}>Borrow Date</th>
                         <th style={{ textAlign: 'left', padding: '8px' }}>Due Date</th>
-                        <th style={{ textAlign: 'left', padding: '8px' }}>Return Date</th>
+                        {showReturnDate && (
+                            <th style={{ textAlign: 'left', padding: '8px' }}>Return Date</th>
+                        )}
                         <th style={{ textAlign: 'left', padding: '8px' }}>Fine</th>
                         {showReturnButton && <th style={{ textAlign: 'left', padding: '8px' }}>Action</th>}
                     </tr>
@@ -77,10 +80,13 @@ function MyLoans() {
                 <tbody>
                     {loans.map((loan) => (
                         <tr key={loan.id} style={{ borderBottom: '1px solid #eee' }}>
-                            <td style={{ padding: '8px' }}>{loan.book_id}</td>
-                            <td style={{ padding: '8px' }}>{loan.borrow_date}</td>
-                            <td style={{ padding: '8px' }}>{loan.due_date}</td>
-                            <td style={{ padding: '8px' }}>{loan.return_date || '-'}</td>
+                            <td style={{ padding: '8px' }}>{loan.title}</td>
+                            <td style={{ padding: '8px' }}>{loan.author}</td>
+                            <td style={{ padding: '8px' }}>{new Date(loan.borrow_date).toLocaleString('sv-SE').slice(0, 16)}</td>
+                            <td style={{ padding: '8px' }}>{new Date(loan.due_date).toLocaleString('sv-SE').slice(0, 16)}</td>
+                            {showReturnDate && (
+                                <td style={{ padding: '8px' }}>{loan.return_date ? new Date(loan.return_date).toLocaleString('sv-SE').slice(0, 16) : '-'}</td>
+                            )}
                             <td style={{ padding: '8px' }}>${loan.fine.toFixed(2)}</td>
                             {showReturnButton && (
                                 <td style={{ padding: '8px' }}>
@@ -138,9 +144,9 @@ function MyLoans() {
             {loading && <p>Loading loans...</p>}
             {error && <p style={{ color: 'red' }}>Error: {error}</p>}
 
-            {!loading && tab === 'active' && renderLoansTable(active, true)}
-            {!loading && tab === 'returned' && renderLoansTable(returned, false)}
-            {!loading && tab === 'overdue' && renderLoansTable(overdue, false)}
+            {!loading && tab === 'active' && renderLoansTable(active, true, false)}
+            {!loading && tab === 'returned' && renderLoansTable(returned, false, true)}
+            {!loading && tab === 'overdue' && renderLoansTable(overdue, false, false)}
         </div>
     );
 }
