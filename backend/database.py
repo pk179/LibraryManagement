@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 from typing import List
+import bcrypt
 from loans import FINE_PER_DAY, MAX_FINE
 
 DB_NAME = "library.db"
@@ -45,6 +46,133 @@ def init_db():
                 FOREIGN KEY(book_id) REFERENCES books(id)
             )
         ''')
+
+
+def seed_db():
+    """Inserts initial data into the database."""
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+
+        # Create a default admin and user account
+        # Demo passwords - public for testing
+        for username, password, role in [
+            ("admin", "Admin123", "admin"),
+            ("user", "User12345", "user"),
+        ]:
+            hashed_password = bcrypt.hashpw(
+                password.encode("utf-8"),
+                bcrypt.gensalt()
+            )
+            try:
+                c.execute(
+                    "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+                    (username, hashed_password, role),
+                )
+            except sqlite3.IntegrityError:
+                pass
+
+        sample_books = [
+            ("The Great Gatsby", "F. Scott Fitzgerald",
+             1925, 5, "Fiction", "978-0-7432-7356-5"),
+            ("To Kill a Mockingbird", "Harper Lee",
+             1960, 3, "Fiction", "978-0-06-112008-4"),
+            ("1984", "George Orwell", 1949, 4, "Dystopian", "978-0-452-28423-4"),
+            ("Pride and Prejudice", "Jane Austen",
+             1813, 2, "Romance", "978-0-14-143951-8"),
+            ("The Catcher in the Rye", "J.D. Salinger",
+             1951, 0, "Fiction", "978-0-316-76948-0"),
+            ("Harry Potter and the Sorcerer's Stone", "J.K. Rowling",
+             1997, 6, "Fantasy", "978-0-590-35340-3"),
+            ("The Lord of the Rings", "J.R.R. Tolkien",
+             1954, 2, "Fantasy", "978-0-547-92822-7"),
+            ("Dune", "Frank Herbert", 1965, 4,
+             "Science Fiction", "978-0-441-17271-9"),
+            ("The Hitchhiker's Guide to the Galaxy", "Douglas Adams",
+             1979, 5, "Science Fiction", "978-0-345-39180-3"),
+            ("Brave New World", "Aldous Huxley", 1932,
+             3, "Dystopian", "978-0-06-085052-4"),
+            ("The Hobbit", "J.R.R. Tolkien", 1937,
+             7, "Fantasy", "978-0-618-00221-3"),
+            ("Fahrenheit 451", "Ray Bradbury", 1953,
+             5, "Dystopian", "978-1-4516-7331-9"),
+            ("Moby-Dick", "Herman Melville", 1851,
+             0, "Adventure", "978-0-14-243724-7"),
+            ("War and Peace", "Leo Tolstoy", 1869,
+             3, "Historical", "978-0-14-303999-0"),
+            ("Crime and Punishment", "Fyodor Dostoevsky",
+             1866, 4, "Psychological", "978-0-14-305814-4"),
+            ("The Alchemist", "Paulo Coelho", 1988,
+             10, "Fiction", "978-0-06-112241-5"),
+            ("The Little Prince", "Antoine de Saint-Exupéry",
+             1943, 6, "Fable", "978-0-15-601219-5"),
+            ("The Da Vinci Code", "Dan Brown", 2003,
+             8, "Thriller", "978-0-307-47427-8"),
+            ("The Girl with the Dragon Tattoo", "Stieg Larsson",
+             2005, 0, "Crime", "978-0-307-45454-6"),
+            ("The Hunger Games", "Suzanne Collins",
+             2008, 9, "Dystopian", "978-0-439-02348-1"),
+            ("The Odyssey", "Homer", -800, 4, "Epic", "978-0-140-26886-7"),
+            ("The Shining", "Stephen King", 1977,
+             3, "Horror", "978-0-307-74165-7"),
+            ("Dracula", "Bram Stoker", 1897, 2, "Horror", "978-0-14-143984-6"),
+            ("Frankenstein", "Mary Shelley", 1818,
+             0, "Gothic", "978-0-14-143947-1"),
+            ("The Chronicles of Narnia", "C.S. Lewis",
+             1956, 6, "Fantasy", "978-0-06-623850-0"),
+            ("Animal Farm", "George Orwell", 1945, 7,
+             "Political Satire", "978-0-452-28424-1"),
+            ("The Kite Runner", "Khaled Hosseini",
+             2003, 5, "Drama", "978-1-59463-193-1"),
+            ("Life of Pi", "Yann Martel", 2001,
+             4, "Adventure", "978-0-15-602732-8"),
+            ("The Road", "Cormac McCarthy", 2006, 2,
+             "Post-Apocalyptic", "978-0-307-38789-9"),
+            ("Gone Girl", "Gillian Flynn", 2012,
+             6, "Thriller", "978-0-307-58837-1"),
+        ]
+
+        for title, author, year, quantity, genre, isbn in sample_books:
+            try:
+                c.execute("""
+                    INSERT INTO books (title, author, year, quantity, genre, isbn)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (title, author, year, quantity, genre, isbn))
+            except sqlite3.IntegrityError:
+                pass
+
+        sample_loans = [
+            (2, 1, "2026-01-02T10:00:00",
+             "2026-01-22T10:00:00", "2026-02-01T10:00:00"),
+            (2, 3, "2026-02-05T14:30:00", None, "2026-03-04T14:30:00"),
+            (2, 5, "2026-03-10T09:00:00", None, "2026-04-09T09:00:00"),
+        ]
+
+        for user_id, book_id, borrow_date, return_date, due_date in sample_loans:
+            try:
+                c.execute("""
+                    INSERT INTO loans (user_id, book_id, borrow_date, return_date, due_date)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (user_id, book_id, borrow_date, return_date, due_date))
+                c.execute(
+                    "UPDATE books SET quantity = quantity - 1 WHERE id = ?", (book_id,))
+            except sqlite3.IntegrityError:
+                pass
+
+        conn.commit()
+
+
+def reset_db():
+    """Clears all data from tables and reseeds with initial data."""
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+
+        c.execute("DELETE FROM loans")
+        c.execute("DELETE FROM books")
+        c.execute("DELETE FROM users")
+
+        conn.commit()
+
+    seed_db()
 
 
 def get_connection():
