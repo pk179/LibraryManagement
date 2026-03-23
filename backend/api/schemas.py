@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 
 
@@ -9,8 +9,8 @@ class UserRegister(BaseModel):
 
 
 class UserLogin(BaseModel):
-    username: str = Field(..., example="jan_kowalski")
-    password: str = Field(..., example="haslo123")
+    username: str = Field(..., json_schema_extra={"example": "jan_kowalski"})
+    password: str = Field(..., json_schema_extra={"example": "haslo123"})
 
 
 class UserResponse(BaseModel):
@@ -18,8 +18,7 @@ class UserResponse(BaseModel):
     username: str
     role: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class RegisterResponse(BaseModel):
@@ -28,12 +27,15 @@ class RegisterResponse(BaseModel):
 
 
 class BookCreate(BaseModel):
-    title: str = Field(..., example="Wiedźmin: Ostatnie życzenie")
-    author: str = Field(..., example="Andrzej Sapkowski")
-    year: int = Field(..., example=1993)
-    quantity: int = Field(default=1, example=3)
-    genre: Optional[str] = Field(default="", example="fantasy")
-    isbn: Optional[str] = Field(default=None, example="9788375780635")
+    title: str = Field(..., json_schema_extra={"example": "Wiedźmin"})
+    author: str = Field(..., json_schema_extra={
+                        "example": "Andrzej Sapkowski"})
+    year: int = Field(..., json_schema_extra={"example": 1993})
+    quantity: int = Field(default=1, json_schema_extra={"example": 3})
+    genre: Optional[str] = Field(
+        default="", json_schema_extra={"example": "fantasy"})
+    isbn: Optional[str] = Field(default=None, json_schema_extra={
+                                "example": "9788375780635"})
 
 
 class BookUpdate(BaseModel):
@@ -54,8 +56,7 @@ class BookResponse(BaseModel):
     genre: Optional[str]
     isbn: Optional[str]
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PostBookResponse(BaseModel):
