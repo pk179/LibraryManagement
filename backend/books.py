@@ -102,7 +102,17 @@ def update_book(book_id, title=None, author=None, year=None, quantity=None, genr
 
         if isbn is not None:
             v.validate_isbn_optional(isbn)
-            updates["isbn"] = v.normalize_isbn(isbn)
+            normalized_isbn = v.normalize_isbn(isbn)
+
+            existing = db.get_book_by_isbn(normalized_isbn)
+
+            if existing and existing["id"] != book_id:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="ISBN already exists"
+                )
+
+            updates["isbn"] = normalized_isbn
 
         if not updates:
             return

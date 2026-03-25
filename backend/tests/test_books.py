@@ -344,7 +344,8 @@ def test_update_book_with_existing_isbn(client, admin_token, admin_headers):
     }
     r = client.put("/api/books/1", json=updated_data,
                    headers=admin_headers(admin_token))
-    assert r.status_code == 500
+    assert r.status_code == 409
+    assert r.json()["detail"] == "ISBN already exists"
 
 
 # Test that updating a non-existing book fails.

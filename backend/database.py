@@ -250,6 +250,17 @@ def get_book_by_id(book_id):
         return dict(row) if row else None
 
 
+def get_book_by_isbn(book_isbn):
+    """Returns book as dict."""
+    with sqlite3.connect(DB_NAME) as conn:
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute(
+            "SELECT id, title, author, year, quantity, genre, isbn FROM books WHERE isbn = ?", (book_isbn,))
+        row = c.fetchone()
+        return dict(row) if row else None
+
+
 def get_book_quantity(book_id):
     """Returns available quantity for a given book."""
     with sqlite3.connect(DB_NAME) as conn:
