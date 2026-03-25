@@ -6,6 +6,8 @@ import database
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import os
+import sqlite3
+from database import DB_NAME
 
 # Scheduler for periodic reset
 scheduler = AsyncIOScheduler()
@@ -19,12 +21,23 @@ def scheduled_reset():
     print("Database reset completed.")
 
 
+# Check if seeding is needed
+def should_seed():
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("SELECT COUNT(*) FROM books")
+        return c.fetchone()[0] == 0
+
+
 # Lifespan function to initialize database and start scheduler on app startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database
     database.init_db()
-    database.seed_db()
+
+    # Seed the database if it's empty
+    if should_seed():
+        database.seed_db()
 
     scheduler.start()
     yield

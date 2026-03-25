@@ -7,14 +7,10 @@ def test_register_new_user(client):
     data = {"username": "user2", "password": "User12345", "role": "user"}
     r = client.post("/api/auth/register", json=data)
     assert r.status_code == 201
-    assert r.json() == {
-        "message": "User registered",
-        "user": {
-            "id": 3,
-            "username": "user2",
-            "role": "user"
-        }
-    }
+    assert r.json()["message"] == "User registered"
+    assert r.json()["user"]["id"] is not None
+    assert r.json()["user"]["username"] == data["username"]
+    assert r.json()["user"]["role"] == data["role"]
 
 
 # Test registering a user with a username that already exists.

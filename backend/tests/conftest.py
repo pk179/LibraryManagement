@@ -51,9 +51,16 @@ def user_token(client):
     return r.json()["access_token"]
 
 
-# Helper fixture to create auth headers for requests.
+# Helper fixtures to create auth headers for requests.
 @pytest.fixture
-def auth_header():
-    def _auth(token):
-        return {"Authorization": f"Bearer {token}"}
+def admin_headers():
+    def _auth(admin_token):
+        return {"Authorization": f"Bearer {admin_token}"}
+    return _auth
+
+
+@pytest.fixture
+def user_headers():
+    def _auth(user_token):
+        return {"Authorization": f"Bearer {user_token}"}
     return _auth
