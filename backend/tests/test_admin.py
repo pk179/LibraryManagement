@@ -102,3 +102,6 @@ def test_reset_requires_admin(client, user_token, user_headers):
     r = client.post("/api/admin/reset",
                     headers=user_headers(user_token))
     assert r.status_code == 403
+
+    r = client.post("/api/admin/reset")
+    assert r.status_code == 403

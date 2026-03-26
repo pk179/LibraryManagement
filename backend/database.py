@@ -80,7 +80,7 @@ def seed_db():
             ("Pride and Prejudice", "Jane Austen",
              1813, 2, "Romance", "9780141439518"),
             ("The Catcher in the Rye", "J.D. Salinger",
-             1951, 0, "Fiction", "9780316769480"),
+             1951, 1, "Fiction", "9780316769480"),
             ("Harry Potter and the Sorcerer's Stone", "J.K. Rowling",
              1997, 6, "Fantasy", "9780590353403"),
             ("The Lord of the Rings", "J.R.R. Tolkien",
@@ -458,11 +458,7 @@ def get_loans_by_user(user_id):
         for row in rows:
             loan = dict(row)
             if not loan["return_date"]:
-                new_fine = calculate_fine(loan["due_date"])
-                c.execute(
-                    "UPDATE loans SET fine = ? WHERE id = ?",
-                    (new_fine, loan["id"]))
-                loan["fine"] = new_fine
+                loan["fine"] = calculate_fine(loan["due_date"])
             loans.append(loan)
 
         return loans
@@ -500,7 +496,14 @@ def get_overdue_loans_by_user(user_id):
               AND loans.due_date < ?
             ORDER BY loans.id DESC
         """, (user_id, now))
-        return [dict(row) for row in c.fetchall()]
+
+        rows = []
+        for row in c.fetchall():
+            loan = dict(row)
+            loan["fine"] = calculate_fine(loan["due_date"])
+            rows.append(loan)
+
+        return rows
 
 
 def get_all_loans():
@@ -523,11 +526,7 @@ def get_all_loans():
         for row in rows:
             loan = dict(row)
             if not loan["return_date"]:
-                new_fine = calculate_fine(loan["due_date"])
-                c.execute(
-                    "UPDATE loans SET fine = ? WHERE id = ?",
-                    (new_fine, loan["id"]))
-                loan["fine"] = new_fine
+                loan["fine"] = calculate_fine(loan["due_date"])
             loans.append(loan)
 
         return loans
@@ -550,7 +549,14 @@ def get_all_overdue_loans():
             WHERE loans.return_date IS NULL AND loans.due_date < ?
             ORDER BY loans.id DESC
         """, (now,))
-        return [dict(row) for row in c.fetchall()]
+
+        rows = []
+        for row in c.fetchall():
+            loan = dict(row)
+            loan["fine"] = calculate_fine(loan["due_date"])
+            rows.append(loan)
+
+        return rows
 
 
 def count_all_loans():

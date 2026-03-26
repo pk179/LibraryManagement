@@ -31,8 +31,9 @@ def test_available_is_subset(client):
 
     assert len(available_books) <= len(all_books)
 
+    all_ids = {book["id"] for book in all_books}
     for book in available_books:
-        assert book in all_books
+        assert book["id"] in all_ids
 
 
 # Test that the search endpoint returns correct results for title and author queries.
@@ -114,14 +115,17 @@ def test_create_book(client, admin_token, admin_headers):
     r = client.post("/api/books", json=new_book,
                     headers=admin_headers(admin_token))
     assert r.status_code == 201
-    assert r.json()["message"] == "Book added"
-    assert r.json()["book"]["id"] is not None
-    assert r.json()["book"]["title"] == new_book["title"]
-    assert r.json()["book"]["author"] == new_book["author"]
-    assert r.json()["book"]["year"] == new_book["year"]
-    assert r.json()["book"]["quantity"] == new_book["quantity"]
-    assert r.json()["book"]["isbn"] == new_book["isbn"]
-    assert r.json()["book"]["genre"] == new_book["genre"]
+
+    response = r.json()
+
+    assert response["message"] == "Book added"
+    assert response["book"]["id"] is not None
+    assert response["book"]["title"] == new_book["title"]
+    assert response["book"]["author"] == new_book["author"]
+    assert response["book"]["year"] == new_book["year"]
+    assert response["book"]["quantity"] == new_book["quantity"]
+    assert response["book"]["isbn"] == new_book["isbn"]
+    assert response["book"]["genre"] == new_book["genre"]
 
 
 # Test that only admins can create books.
@@ -136,6 +140,9 @@ def test_create_book_requires_admin(client, user_token, user_headers):
     }
     r = client.post("/api/books", json=new_book,
                     headers=user_headers(user_token))
+    assert r.status_code == 403
+
+    r = client.post("/api/books", json=new_book)
     assert r.status_code == 403
 
 
@@ -182,14 +189,17 @@ def test_create_book_with_empty_isbn_and_genre(client, admin_token, admin_header
     r = client.post("/api/books", json=new_book,
                     headers=admin_headers(admin_token))
     assert r.status_code == 201
-    assert r.json()["message"] == "Book added"
-    assert r.json()["book"]["id"] is not None
-    assert r.json()["book"]["title"] == new_book["title"]
-    assert r.json()["book"]["author"] == new_book["author"]
-    assert r.json()["book"]["year"] == new_book["year"]
-    assert r.json()["book"]["quantity"] == new_book["quantity"]
-    assert r.json()["book"]["isbn"] is None
-    assert r.json()["book"]["genre"] is None
+
+    response = r.json()
+
+    assert response["message"] == "Book added"
+    assert response["book"]["id"] is not None
+    assert response["book"]["title"] == new_book["title"]
+    assert response["book"]["author"] == new_book["author"]
+    assert response["book"]["year"] == new_book["year"]
+    assert response["book"]["quantity"] == new_book["quantity"]
+    assert response["book"]["isbn"] is None
+    assert response["book"]["genre"] is None
 
 
 # Test that creating a book with an ISBN that already exists updates the quantity of the existing book instead of creating a new one.
@@ -256,14 +266,17 @@ def test_update_book(client, admin_token, admin_headers):
     r = client.put("/api/books/1", json=updated_data,
                    headers=admin_headers(admin_token))
     assert r.status_code == 200
-    assert r.json()["message"] == "Book updated"
-    assert r.json()["book"]["id"] == 1
-    assert r.json()["book"]["title"] == updated_data["title"]
-    assert r.json()["book"]["author"] == updated_data["author"]
-    assert r.json()["book"]["year"] == updated_data["year"]
-    assert r.json()["book"]["quantity"] == updated_data["quantity"]
-    assert r.json()["book"]["genre"] == updated_data["genre"]
-    assert r.json()["book"]["isbn"] == updated_data["isbn"]
+
+    response = r.json()
+
+    assert response["message"] == "Book updated"
+    assert response["book"]["id"] == 1
+    assert response["book"]["title"] == updated_data["title"]
+    assert response["book"]["author"] == updated_data["author"]
+    assert response["book"]["year"] == updated_data["year"]
+    assert response["book"]["quantity"] == updated_data["quantity"]
+    assert response["book"]["genre"] == updated_data["genre"]
+    assert response["book"]["isbn"] == updated_data["isbn"]
 
 
 # Test that updating a book requires admin role.
@@ -280,6 +293,9 @@ def test_update_book_requires_admin(client, user_token, user_headers):
                    headers=user_headers(user_token))
     assert r.status_code == 403
 
+    r = client.put("/api/books/1", json=updated_data)
+    assert r.status_code == 403
+
 
 # Test that partial update works correctly.
 def test_update_with_missing_fields(client, admin_token, admin_headers):
@@ -292,14 +308,17 @@ def test_update_with_missing_fields(client, admin_token, admin_headers):
     r = client.put("/api/books/1", json=updated_data,
                    headers=admin_headers(admin_token))
     assert r.status_code == 200
-    assert r.json()["message"] == "Book updated"
-    assert r.json()["book"]["id"] == 1
-    assert r.json()["book"]["title"] == updated_data["title"]
-    assert r.json()["book"]["author"] == old_book["author"]
-    assert r.json()["book"]["year"] == old_book["year"]
-    assert r.json()["book"]["quantity"] == updated_data["quantity"]
-    assert r.json()["book"]["genre"] == updated_data["genre"]
-    assert r.json()["book"]["isbn"] == old_book["isbn"]
+
+    response = r.json()
+
+    assert response["message"] == "Book updated"
+    assert response["book"]["id"] == 1
+    assert response["book"]["title"] == updated_data["title"]
+    assert response["book"]["author"] == old_book["author"]
+    assert response["book"]["year"] == old_book["year"]
+    assert response["book"]["quantity"] == updated_data["quantity"]
+    assert response["book"]["genre"] == updated_data["genre"]
+    assert response["book"]["isbn"] == old_book["isbn"]
 
 
 # Test that updating a book with empty fields fails.
@@ -373,9 +392,23 @@ def test_delete_book(client, admin_token, admin_headers):
     assert r.status_code == 404
 
 
+# Test that deleting the same book twice fails.
+def test_delete_book_twice(client, admin_token, admin_headers):
+    r = client.delete("/api/books/1", headers=admin_headers(admin_token))
+    assert r.status_code == 200
+    assert r.json()["message"] == "Book deleted"
+
+    r = client.delete("/api/books/1", headers=admin_headers(admin_token))
+    assert r.status_code == 404
+    assert r.json()["detail"] == "Book not found"
+
+
 # Test that deleting a book requires admin role.
 def test_delete_book_requires_admin(client, user_token, user_headers):
     r = client.delete("/api/books/2", headers=user_headers(user_token))
+    assert r.status_code == 403
+
+    r = client.delete("/api/books/2")
     assert r.status_code == 403
 
 
@@ -415,4 +448,8 @@ def test_bulk_delete_books_requires_admin(client, user_token, user_headers):
     r = client.request("DELETE", "/api/books/",
                        json=[3, 8, 45],
                        headers=user_headers(user_token))
+    assert r.status_code == 403
+
+    r = client.request("DELETE", "/api/books/",
+                       json=[3, 8, 45])
     assert r.status_code == 403

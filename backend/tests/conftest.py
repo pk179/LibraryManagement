@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from api.main import app
 import database
 import os
+from api.auth import decode_access_token
 
 TEST_DB_NAME = "test.db"
 
@@ -64,3 +65,11 @@ def user_headers():
     def _auth(user_token):
         return {"Authorization": f"Bearer {user_token}"}
     return _auth
+
+
+# Helper fixture to get current user.
+@pytest.fixture
+def current_user(user_token):
+    payload = decode_access_token(user_token)
+    user_id = int(payload["sub"])
+    return database.get_user_by_id(user_id)
