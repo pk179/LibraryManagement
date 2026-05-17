@@ -20,6 +20,7 @@ function Register() {
         setLoading(true);
         try {
             await register(credentials);
+            alert('Registration successful! Please login.');
             navigate('/login');
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
@@ -38,12 +39,12 @@ function Register() {
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label>Username:</label>
-                    <input name="username" value={credentials.username} onChange={handleChange} required />
+                    <label htmlFor='username'>Username:</label>
+                    <input id='username' name="username" value={credentials.username} onChange={handleChange} placeholder='Username' required />
                 </div>
                 <div>
-                    <label>Password:</label>
-                    <input type="password" name="password" value={credentials.password} onChange={handleChange} required />
+                    <label htmlFor='password'>Password:</label>
+                    <input id='password' type="password" name="password" value={credentials.password} onChange={handleChange} placeholder='Password' required />
                 </div>
                 <button type="submit" disabled={loading}>{loading ? 'Registering...' : 'Register'}</button>
             </form>

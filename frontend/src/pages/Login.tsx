@@ -38,12 +38,12 @@ function Login() {
             {error && <p style={{ color: 'red' }}>{error}</p>}
             <form onSubmit={handleSubmit}>
                 <div>
-                    <label>Username:</label>
-                    <input name="username" value={credentials.username} onChange={handleChange} required />
+                    <label htmlFor='username'>Username:</label>
+                    <input id='username' name="username" value={credentials.username} onChange={handleChange} placeholder='Username' autoComplete='username' required />
                 </div>
                 <div>
-                    <label>Password:</label>
-                    <input type="password" name="password" value={credentials.password} onChange={handleChange} required />
+                    <label htmlFor='password'>Password:</label>
+                    <input id='password' type="password" name="password" value={credentials.password} onChange={handleChange} placeholder='Password' autoComplete='current-password' required />
                 </div>
                 <button type="submit" disabled={loading}>{loading ? 'Logging in...' : 'Login'}</button>
             </form>

@@ -17,7 +17,6 @@ export default defineConfig({
   /* Reporter to use */
   reporter: [
     ['html'],
-    ['stdout'],
   ],
 
   /* Global timeout for all tests */
