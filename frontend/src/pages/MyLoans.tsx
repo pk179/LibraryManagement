@@ -80,14 +80,14 @@ function MyLoans() {
                 <tbody>
                     {loans.map((loan) => (
                         <tr key={loan.id} style={{ borderBottom: '1px solid #eee' }}>
-                            <td style={{ padding: '8px' }}>{loan.title}</td>
+                            <td data-testid="book-title" style={{ padding: '8px' }}>{loan.title}</td>
                             <td style={{ padding: '8px' }}>{loan.author}</td>
-                            <td style={{ padding: '8px' }}>{new Date(loan.borrow_date).toLocaleString('sv-SE').slice(0, 16)}</td>
-                            <td style={{ padding: '8px' }}>{new Date(loan.due_date).toLocaleString('sv-SE').slice(0, 16)}</td>
+                            <td data-testid="borrow-date" style={{ padding: '8px' }}>{new Date(loan.borrow_date).toLocaleString('sv-SE').slice(0, 16)}</td>
+                            <td data-testid="due-date" style={{ padding: '8px' }}>{new Date(loan.due_date).toLocaleString('sv-SE').slice(0, 16)}</td>
                             {showReturnDate && (
-                                <td style={{ padding: '8px' }}>{loan.return_date ? new Date(loan.return_date).toLocaleString('sv-SE').slice(0, 16) : '-'}</td>
+                                <td data-testid="return-date" style={{ padding: '8px' }}>{loan.return_date ? new Date(loan.return_date).toLocaleString('sv-SE').slice(0, 16) : '-'}</td>
                             )}
-                            <td style={{ padding: '8px' }}>${loan.fine.toFixed(2)}</td>
+                            <td data-testid="fine" style={{ padding: '8px' }}>${loan.fine.toFixed(2)}</td>
                             {showReturnButton && (
                                 <td style={{ padding: '8px' }}>
                                     <button onClick={() => handleReturn(loan.book_id)}>

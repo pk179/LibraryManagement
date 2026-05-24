@@ -28,9 +28,10 @@ export const test = base.extend<{
     backendRequest: APIRequestContext;
     userToken: string;
     adminToken: string;
+    testUser: { username: string; role: 'user' | 'admin'; token: string };
     authenticatedUserPage: Page;
     authenticatedAdminPage: Page;
-    resetDatabase: () => Promise<void>;
+    testUserPage: Page;
 }>({
     backendRequest: async ({ playwright }, run) => {
         const request = await playwright.request.newContext({
@@ -43,10 +44,10 @@ export const test = base.extend<{
         await request.dispose();
     },
 
-    userToken: async ({ backendRequest }, run) => {
+    userToken: async ({ backendRequest }, run, testInfo) => {
         const response = await backendRequest.post('/api/auth/login', {
             data: {
-                username: 'user',
+                username: `user_${testInfo.project.name}`,
                 password: 'User12345',
             },
         });
@@ -67,6 +68,38 @@ export const test = base.extend<{
         await run(body.access_token as string);
     },
 
+    testUser: async ({ backendRequest }, run, testInfo) => {
+
+        const username = `test_${testInfo.workerIndex}_${Date.now()}`;
+
+        const response = await backendRequest.post('/api/auth/register', {
+            data: {
+                username,
+                password: 'User12345',
+                role: 'user',
+            },
+        });
+
+        expect(response.ok()).toBeTruthy();
+
+        const login = await backendRequest.post('/api/auth/login', {
+            data: {
+                username,
+                password: 'User12345',
+            },
+        });
+
+        expect(login.ok()).toBeTruthy();
+
+        const body = await login.json();
+
+        await run({
+            username,
+            role: 'user',
+            token: body.access_token,
+        });
+    },
+
     authenticatedUserPage: async ({ page, userToken }, run) => {
         await setPageAuth(page, userToken);
         await page.goto(frontendBaseURL, { waitUntil: 'networkidle' });
@@ -79,16 +112,10 @@ export const test = base.extend<{
         await run(page);
     },
 
-    resetDatabase: async ({ backendRequest, adminToken }, run) => {
-        await run(async () => {
-            const response = await backendRequest.post('/api/admin/reset', {
-                data: {},
-                headers: {
-                    Authorization: `Bearer ${adminToken}`,
-                },
-            });
-            expect(response.ok()).toBeTruthy();
-        });
+    testUserPage: async ({ page, testUser }, run) => {
+        await setPageAuth(page, testUser.token);
+        await page.goto(frontendBaseURL, { waitUntil: 'networkidle' });
+        await run(page);
     },
 });
 

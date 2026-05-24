@@ -92,8 +92,8 @@ function BooksList() {
                     </thead>
                     <tbody>
                         {books.map((book) => (
-                            <tr key={book.id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '8px' }}>{book.title}</td>
+                            <tr data-testid={`book-row-${book.id}`} style={{ borderBottom: '1px solid #eee' }}>
+                                <td data-testid="book-title" style={{ padding: '8px' }}>{book.title}</td>
                                 <td style={{ padding: '8px' }}>{book.author}</td>
                                 <td style={{ padding: '8px' }}>{book.year >= 0 ? book.year : Math.abs(book.year) + ' BC'}</td>
                                 <td style={{ padding: '8px' }}>{book.genre || '-'}</td>
@@ -106,7 +106,7 @@ function BooksList() {
                                             Borrow
                                         </button>
                                     ) : (
-                                        <span style={{ color: '#999' }}>Unavailable</span>
+                                        <span data-testid="book-unavailable" style={{ color: '#999' }}>Unavailable</span>
                                     )}
                                 </td>
                             </tr>

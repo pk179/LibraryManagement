@@ -58,6 +58,9 @@ def seed_db():
         for username, password, role in [
             ("admin", "Admin123", "admin"),
             ("user", "User12345", "user"),
+            ("user_chromium", "User12345", "user"),
+            ("user_firefox", "User12345", "user"),
+            ("user_webkit", "User12345", "user"),
         ]:
             hashed_password = bcrypt.hashpw(
                 password.encode("utf-8"),
@@ -145,6 +148,9 @@ def seed_db():
              "2026-01-22T10:00:00", "2026-02-01T10:00:00"),
             (2, 3, "2026-02-05T14:30:00", None, "2026-03-04T14:30:00"),
             (2, 5, "2026-03-10T09:00:00", None, "2026-04-09T09:00:00"),
+            (3, 6, "2026-03-10T09:00:00", None, "2026-04-09T09:00:00"),
+            (4, 6, "2026-03-10T09:00:00", None, "2026-04-09T09:00:00"),
+            (5, 6, "2026-03-10T09:00:00", None, "2026-04-09T09:00:00"),
         ]
 
         for user_id, book_id, borrow_date, return_date, due_date in sample_loans:

@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures';
+import { test, expect } from './fixtures/fixtures';
 
 test.describe('Authentication', () => {
     test('user can register and login', async ({ page }) => {
@@ -9,9 +9,10 @@ test.describe('Authentication', () => {
 
         await page.getByLabel('Username:').fill(username);
         await page.getByLabel('Password:').fill(password);
-        await page.getByRole('button', { name: 'Register' }).click();
 
-        const dialog = await page.waitForEvent('dialog');
+        const dialogPromise = page.waitForEvent('dialog');
+        await page.getByRole('button', { name: 'Register' }).click();
+        const dialog = await dialogPromise;
         expect(dialog.message()).toBe('Registration successful! Please login.');
         await dialog.accept();
 
@@ -73,7 +74,7 @@ test.describe('Authentication', () => {
     test('user cannot access admin pages', async ({ authenticatedUserPage: page }) => {
         await page.goto("/admin/books");
         await expect(page).toHaveURL("/");
-        await expect(page.getByRole('heading', { name: `Welcome, user!` })).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Welcome, user_' })).toBeVisible();
         await expect(page.getByRole('heading', { name: 'Admin Dashboard' })).not.toBeVisible();
     });
 });
