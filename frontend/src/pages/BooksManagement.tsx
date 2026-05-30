@@ -66,6 +66,7 @@ function BooksManagement() {
         try {
             const ids = Array.from(selectedIds);
             await bulkDeleteBooks(ids);
+            alert('Books deleted');
             setSelectedIds(new Set());
             loadBooks();
         } catch (err: unknown) {
@@ -124,6 +125,7 @@ function BooksManagement() {
         if (!confirm('Delete this book?')) return;
         try {
             await deleteBook(id);
+            alert('Book deleted');
             loadBooks();
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
@@ -181,6 +183,7 @@ function BooksManagement() {
             <label style={{ marginBottom: '12px', display: 'block' }}>
                 <input
                     type="checkbox"
+                    data-testid="available-checkbox"
                     checked={availableOnly}
                     onChange={(e) => setAvailableOnly(e.target.checked)}
                 />
@@ -212,16 +215,17 @@ function BooksManagement() {
                                 <td style={{ padding: '8px' }}>
                                     <input
                                         type="checkbox"
+                                        data-testid="book-checkbox"
                                         checked={selectedIds.has(book.id)}
                                         onChange={e => handleSelect(book.id, e.target.checked)}
                                     />
                                 </td>
                                 <td style={{ padding: '8px' }}>{book.id}</td>
-                                <td style={{ padding: '8px' }}>{book.title}</td>
-                                <td style={{ padding: '8px' }}>{book.author}</td>
+                                <td data-testid="book-title" style={{ padding: '8px' }}>{book.title}</td>
+                                <td data-testid="book-author" style={{ padding: '8px' }}>{book.author}</td>
                                 <td style={{ padding: '8px' }}>{book.year >= 0 ? book.year : Math.abs(book.year) + ' BC'}</td>
-                                <td style={{ padding: '8px' }}>{book.genre || '-'}</td>
-                                <td style={{ padding: '8px' }}>{book.quantity}</td>
+                                <td data-testid="book-genre" style={{ padding: '8px' }}>{book.genre || '-'}</td>
+                                <td data-testid="book-quantity" style={{ padding: '8px' }}>{book.quantity}</td>
                                 <td style={{ padding: '8px' }}>{book.isbn}</td>
                                 <td style={{ padding: '8px' }}>
                                     <button onClick={() => openEditForm(book)}>Edit</button>{' '}

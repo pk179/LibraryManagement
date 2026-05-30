@@ -36,7 +36,7 @@ def test_available_is_subset(client):
         assert book["id"] in all_ids
 
 
-# Test that the search endpoint returns correct results for title and author queries.
+# Test that the search endpoint returns correct results for title, author and genre queries.
 @pytest.mark.parametrize("query", ["girl", "1984", "hitch"])
 def test_search_book_by_title(client, query):
     r = client.get(f"/api/books/search?q={query}")
@@ -57,6 +57,17 @@ def test_search_book_by_author(client, query):
     assert isinstance(books, list)
     assert len(books) > 0
     assert all(query in book["author"].lower() for book in books)
+
+
+@pytest.mark.parametrize("query", ["romance", "dystopian", "fant"])
+def test_search_book_by_genre(client, query):
+    r = client.get(f"/api/books/search?q={query}")
+    assert r.status_code == 200
+
+    books = r.json()
+    assert isinstance(books, list)
+    assert len(books) > 0
+    assert all(query in (book["genre"]).lower() for book in books)
 
 
 # Test that the search endpoint returns an empty list when no matches are found.

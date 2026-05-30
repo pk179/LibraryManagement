@@ -77,7 +77,7 @@ def test_delete_current_user(client, admin_token, admin_headers):
 
 
 # Test that deleting a non-existing user fails.
-@pytest.mark.parametrize("user_id", [4, 8, 999])
+@pytest.mark.parametrize("user_id", [14, 38, 999])
 def test_delete_non_existing_user(client, admin_token, admin_headers, user_id):
     r = client.delete(f"/api/users/{user_id}",
                       headers=admin_headers(admin_token))

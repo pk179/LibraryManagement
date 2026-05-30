@@ -30,7 +30,7 @@ def test_reset_users(client, admin_token, admin_headers):
     assert "admin" in usernames
     assert "user" in usernames
     assert "testuser" not in usernames
-    assert len(usernames) == 2
+    assert len(usernames) == 5
 
 
 # Test that the books table is restored to its initial state.
@@ -94,7 +94,7 @@ def test_reset_loans(client, admin_token, admin_headers):
     loans = r.json()
     assert all(not (loan["user_id"] == 1 and loan["book_id"] == 1)
                for loan in loans)
-    assert len(loans) == 3
+    assert len(loans) == 6
 
 
 # Test that only admins can reset the database.

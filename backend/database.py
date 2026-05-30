@@ -612,9 +612,9 @@ def search_books(query, only_available=False, genre_filter=None):
         sql = """
             SELECT id, title, author, year, quantity, genre, isbn
             FROM books
-            WHERE (LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?))
+            WHERE (LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?) OR LOWER(genre) LIKE LOWER(?))
         """
-        params = [f"%{query}%", f"%{query}%"]
+        params = [f"%{query}%", f"%{query}%", f"%{query}%"]
 
         if genre_filter:
             sql += " AND LOWER(genre) = LOWER(?)"
