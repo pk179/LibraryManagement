@@ -33,6 +33,7 @@ function UsersManagement() {
         if (!confirm('Delete this user?')) return;
         try {
             await deleteUser(id);
+            alert('User deleted');
             load();
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
@@ -62,7 +63,7 @@ function UsersManagement() {
                     </thead>
                     <tbody>
                         {users.map(user => (
-                            <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
+                            <tr data-testid={`user-row-${user.username}`} key={user.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '8px' }}>{user.id}</td>
                                 <td style={{ padding: '8px' }}>{user.username}</td>
                                 <td style={{ padding: '8px' }}>{user.role}</td>

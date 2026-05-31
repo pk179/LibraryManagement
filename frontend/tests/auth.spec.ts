@@ -17,7 +17,7 @@ test.describe('Authentication', () => {
         await dialog.accept();
 
         await expect(page).toHaveURL("/login");
-
+        await expect(page.getByLabel('Username:')).toBeVisible();
         await page.getByLabel('Username:').fill(username);
         await page.getByLabel('Password:').fill(password);
         await page.getByRole('button', { name: 'Login' }).click();
