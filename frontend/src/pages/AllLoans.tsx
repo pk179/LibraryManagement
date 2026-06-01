@@ -57,7 +57,7 @@ function AllLoans() {
                 </thead>
                 <tbody>
                     {loans.map(loan => (
-                        <tr key={loan.id} style={{ borderBottom: '1px solid #eee' }}>
+                        <tr data-testid={`loan-row-${loan.id}`} key={loan.id} style={{ borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '8px' }}>{loan.id}</td>
                             <td style={{ padding: '8px' }}>{loan.user_id}</td>
                             <td style={{ padding: '8px' }}>{loan.book_id}</td>
