@@ -16,7 +16,7 @@ test.describe('Admin Dashboard', () => {
         expect(allLoansCount).toBeGreaterThanOrEqual(overdueLoansCount);
     });
 
-    test.only('Admin can view dashboard statistics', async ({ authenticatedAdminPage: page }) => {
+    test('Admin can view dashboard statistics', async ({ authenticatedAdminPage: page }) => {
         await page.goto('/admin');
         await expect(page.getByText('Total loans')).toContainText(/\d+/);
 

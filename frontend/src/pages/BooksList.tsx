@@ -68,6 +68,7 @@ function BooksList() {
             <label style={{ marginBottom: '12px', display: 'block' }}>
                 <input
                     type="checkbox"
+                    data-testid="available-checkbox"
                     checked={availableOnly}
                     onChange={(e) => setAvailableOnly(e.target.checked)}
                 />
@@ -94,9 +95,9 @@ function BooksList() {
                         {books.map((book) => (
                             <tr data-testid={`book-row-${book.id}`} style={{ borderBottom: '1px solid #eee' }}>
                                 <td data-testid="book-title" style={{ padding: '8px' }}>{book.title}</td>
-                                <td style={{ padding: '8px' }}>{book.author}</td>
+                                <td data-testid="book-author" style={{ padding: '8px' }}>{book.author}</td>
                                 <td style={{ padding: '8px' }}>{book.year >= 0 ? book.year : Math.abs(book.year) + ' BC'}</td>
-                                <td style={{ padding: '8px' }}>{book.genre || '-'}</td>
+                                <td data-testid="book-genre" style={{ padding: '8px' }}>{book.genre || '-'}</td>
                                 <td data-testid="book-available" style={{ padding: '8px' }}>
                                     {book.quantity > 0 ? `Yes (${book.quantity})` : 'No'}
                                 </td>
