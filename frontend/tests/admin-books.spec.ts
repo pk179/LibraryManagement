@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures/fixtures';
 
-test.describe('Books management', () => {
+test.describe('Books Management', () => {
     test('admin can search books in admin panel', async ({ authenticatedAdminPage: page }) => {
         await page.goto('/admin/books');
 

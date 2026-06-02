@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures/fixtures';
 
-test.describe('Users management', () => {
+test.describe('Users Management', () => {
     test('admin can view users', async ({ authenticatedAdminPage: page }) => {
         await page.goto('/admin/users');
         await expect(page.getByTestId('user-row-admin')).toBeVisible();

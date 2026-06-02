@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures/fixtures';
 
-test.describe('User loans', () => {
+test.describe('User Loans', () => {
     test('user can borrow and return a book', async ({ authenticatedUserPage: page }) => {
         await page.goto("/books");
 
