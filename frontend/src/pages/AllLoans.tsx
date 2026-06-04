@@ -59,7 +59,7 @@ function AllLoans() {
                     {loans.map(loan => (
                         <tr data-testid={`loan-row-${loan.id}`} key={loan.id} style={{ borderBottom: '1px solid #eee' }}>
                             <td style={{ padding: '8px' }}>{loan.id}</td>
-                            <td style={{ padding: '8px' }}>{loan.user_id}</td>
+                            <td data-testid='userid' style={{ padding: '8px' }}>{loan.user_id}</td>
                             <td style={{ padding: '8px' }}>{loan.book_id}</td>
                             <td style={{ padding: '8px' }}>{new Date(loan.borrow_date).toLocaleString('sv-SE').slice(0, 16)}</td>
                             <td style={{ padding: '8px' }}>{new Date(loan.due_date).toLocaleString('sv-SE').slice(0, 16)}</td>

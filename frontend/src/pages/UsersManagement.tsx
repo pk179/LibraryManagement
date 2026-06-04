@@ -65,7 +65,7 @@ function UsersManagement() {
                         {users.map(user => (
                             <tr data-testid={`user-row-${user.username}`} key={user.id} style={{ borderBottom: '1px solid #eee' }}>
                                 <td style={{ padding: '8px' }}>{user.id}</td>
-                                <td style={{ padding: '8px' }}>{user.username}</td>
+                                <td data-testid='username' style={{ padding: '8px' }}>{user.username}</td>
                                 <td style={{ padding: '8px' }}>{user.role}</td>
                                 <td style={{ padding: '8px' }}>
                                     <button onClick={() => handleDelete(user.id)}>Delete</button>

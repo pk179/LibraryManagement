@@ -58,16 +58,26 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: 'reset-database.spec.ts',
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      testIgnore: 'reset-database.spec.ts',
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      testIgnore: 'reset-database.spec.ts',
+    },
+
+    {
+      name: 'reset',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: 'reset-database.spec.ts',
+      dependencies: ['chromium', 'firefox', 'webkit'],
     },
 
     /* Test against mobile viewports. */
