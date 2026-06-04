@@ -78,4 +78,92 @@ test.describe('User Loans', () => {
         await expect(unavailableBookRow.getByTestId('book-unavailable')).toBeVisible();
         await expect(unavailableBookRow.getByRole('button', { name: 'Borrow' })).toHaveCount(0);
     })
+
+    test('user cannot borrow book after another user borrows the last copy', async ({ browser, backendRequest, adminToken }, testInfo) => {
+        const usernameA = `userA_${testInfo.workerIndex}_${Date.now()}`;
+        const usernameB = `userB_${testInfo.workerIndex}_${Date.now()}`;
+
+        const userA = await backendRequest.post('/api/auth/register', {
+            data: {
+                username: usernameA,
+                password: 'User12345',
+                role: 'user',
+            }
+        })
+        expect(userA.ok()).toBeTruthy();
+
+        const userB = await backendRequest.post('/api/auth/register', {
+            data: {
+                username: usernameB,
+                password: 'User12345',
+                role: 'user',
+            }
+        })
+        expect(userB.ok()).toBeTruthy();
+
+        const title = `concurrent-borrow-test-${testInfo.project.name}-${Date.now()}`;
+
+        const response = await backendRequest.post('/api/books', {
+            headers: {
+                Authorization: `Bearer ${adminToken}`,
+            },
+            data: {
+                title,
+                author: 'test author',
+                year: 2026,
+                quantity: 1,
+                genre: 'test',
+                isbn: undefined,
+            },
+        });
+        expect(response.status()).toBe(201);
+
+        const contextA = await browser.newContext();
+        const pageA = await contextA.newPage();
+
+        const contextB = await browser.newContext();
+        const pageB = await contextB.newPage();
+
+        await pageA.goto('/login');
+        await expect(pageA.getByLabel('Username:')).toBeVisible();
+        await pageA.getByLabel('Username:').fill(usernameA);
+        await pageA.getByLabel('Password:').fill('User12345');
+        await pageA.getByRole('button', { name: 'Login' }).click();
+        await expect(pageA).toHaveURL("/");
+
+        await pageB.goto('/login');
+        await expect(pageB.getByLabel('Username:')).toBeVisible();
+        await pageB.getByLabel('Username:').fill(usernameB);
+        await pageB.getByLabel('Password:').fill('User12345');
+        await pageB.getByRole('button', { name: 'Login' }).click();
+        await expect(pageB).toHaveURL("/");
+
+        await pageA.goto('/books');
+        await expect(pageA.getByTestId('book-title').first()).toBeVisible();
+        await pageA.getByPlaceholder('Search').fill(`concurrent-borrow-test-${testInfo.project.name}-`);
+
+        await pageB.goto('/books');
+        await expect(pageB.getByTestId('book-title').first()).toBeVisible();
+        await pageB.getByPlaceholder('Search').fill(`concurrent-borrow-test-${testInfo.project.name}-`);
+
+        const dialogPromiseA = pageA.waitForEvent('dialog');
+        await pageA.getByRole('button', { name: 'Borrow' }).first().click();
+        const dialogA = await dialogPromiseA;
+        expect(dialogA.message()).toBe('Book borrowed successfully!');
+        await dialogA.accept();
+
+        const dialogPromiseB = pageB.waitForEvent('dialog');
+        await pageB.getByRole('button', { name: 'Borrow' }).first().click();
+        const dialogB = await dialogPromiseB;
+        expect(dialogB.message()).toBe('Book is not available');
+        await dialogB.accept();
+
+        await pageA.goto('/my-loans');
+        await expect(pageA.getByTestId('book-title').first()).toBeVisible();
+        await expect(pageA.getByTestId('book-title').first()).toContainText(`concurrent-borrow-test-${testInfo.project.name}-`);
+
+        await pageB.goto('/my-loans');
+        await expect(pageB.getByTestId('book-title')).toHaveCount(0);
+        await expect(pageB.getByText('No loans in this category.')).toBeVisible();
+    })
 });

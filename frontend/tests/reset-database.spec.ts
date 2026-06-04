@@ -1,8 +1,6 @@
 import { test, expect } from './fixtures/fixtures'
 
 test.describe('Reset database', () => {
-    //test.skip(({ browserName }) => browserName !== 'chromium');
-
     test('admin can reset database', async ({ authenticatedAdminPage: page }) => {
         await page.goto('/admin');
         await expect(page.getByRole('button', { name: 'Reset database' })).toBeVisible();
