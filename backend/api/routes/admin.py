@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from api.auth import current_user_dep
 import database
+import logger
 
 router = APIRouter(
     prefix="/api/admin",
@@ -23,4 +24,5 @@ def admin_required(current_user=Depends(current_user_dep)):
 @router.post("/reset", status_code=status.HTTP_200_OK)
 def reset_database(admin=Depends(admin_required)):
     database.reset_db()
+    logger.log_info(f"Admin '{admin['username']}' reset the database")
     return {"message": "Database reset successfully"}

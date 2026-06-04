@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from api.auth import current_user_dep
 from api.schemas import UserResponse
 import database
+import logger
 
 router = APIRouter(
     prefix="/api/users",
@@ -30,7 +31,7 @@ def list_users(admin=Depends(admin_required)):
         users = database.get_all_users()
         return [UserResponse(**u) for u in users]
     except Exception as e:
-        print(f"Error reading user list: {e}")
+        logger.log_error(f"Error reading user list: {e}")
         raise HTTPException(status_code=500, detail="Internal error")
 
 
@@ -54,5 +55,5 @@ def delete_user(user_id: int, admin=Depends(admin_required)):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"Error deleting user: {e}")
+        logger.log_error(f"Error deleting user: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")

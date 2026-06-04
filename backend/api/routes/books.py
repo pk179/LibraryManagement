@@ -40,7 +40,7 @@ def get_all_books(available: bool = False):
         rows = database.get_all_books(only_available=available)
         return [BookResponse(**b) for b in rows]
     except Exception as e:
-        print(f"Error reading books list: {e}")
+        logger.log_error(f"Error reading books list: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -160,5 +160,5 @@ def search_books(
         )
         return [BookResponse(**b) for b in results]
     except Exception as e:
-        print(f"Error searching books: {e}")
+        logger.log_error(f"Error searching books: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")

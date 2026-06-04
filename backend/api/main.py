@@ -8,6 +8,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 import os
 import sqlite3
 from database import DB_NAME
+import logger
 
 # Scheduler for periodic reset
 scheduler = AsyncIOScheduler()
@@ -18,7 +19,7 @@ reset_interval_hours = int(
 @scheduler.scheduled_job(IntervalTrigger(hours=reset_interval_hours))
 def scheduled_reset():
     database.reset_db()
-    print("Database reset completed.")
+    logger.log_info("Database reset completed.")
 
 
 # Check if seeding is needed
