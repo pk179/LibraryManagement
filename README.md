@@ -146,3 +146,41 @@ Run:
 cd frontend
 npx playwright test
 ```
+
+## Postman
+
+The project includes automated Postman collections for REST API testing, authorization and end-to-end business workflows. All Postman collections and environments are available in the `postman` directory.
+
+### Collections
+
+- **Library App** - endpoint-level API testing
+- **Library App Test Flows** - end-to-end API workflows
+
+### Environments
+
+* Admin Role
+* User Role
+* Unauthorized
+
+### Covered Areas
+
+* Authentication and JWT validation
+* Role-based authorization
+* CRUD operations
+* Business workflow testing
+* Positive and negative scenarios
+* Input validation
+* Boundary and edge case testing
+* Response body and data type validation
+
+### Running the Collections
+
+1. Start the backend application.
+2. Import the following files from the `postman` directory:
+   * `Library App.postman_collection.json`
+   * `Library App Test Flows.postman_collection.json`
+   * `Admin Role.postman_environment.json`
+   * `User Role.postman_environment.json`
+   * `Unauthorized.postman_environment.json`
+3. Select the desired environment.
+4. Run the selected collection using the **Collection Runner**.
